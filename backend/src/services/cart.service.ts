@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { prisma } from "../prisma/client";
+import { publicProductWhere } from "./product.service";
 
 const cartItemSchema = z.object({
   productId: z.coerce.number().int().positive(),
@@ -24,8 +25,10 @@ export async function getCart(userId: number) {
 
 export async function addCartItem(userId: number, input: unknown) {
   const data = cartItemSchema.parse(input);
-  const product = await prisma.product.findUnique({ where: { id: data.productId } });
-  if (!product || !product.isActive) throw new Error("Sản phẩm không tồn tại");
+  const product = await prisma.product.findFirst({
+    where: { id: data.productId, ...publicProductWhere }
+  });
+  if (!product) throw new Error("Sản phẩm không tồn tại");
   if (product.stock < data.quantity) throw new Error("Số lượng vượt quá tồn kho");
 
   const cart = await getOrCreateCart(userId);

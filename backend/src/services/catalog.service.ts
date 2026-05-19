@@ -7,11 +7,16 @@ const catalogSchema = z.object({
   slug: z.string().optional(),
   description: z.string().optional().nullable(),
   image: z.string().optional().nullable(),
+  icon: z.string().optional().nullable(),
+  parentId: z.coerce.number().int().positive().optional().nullable(),
   logo: z.string().optional().nullable()
 });
 
 export async function listCategories() {
-  return prisma.category.findMany({ orderBy: { name: "asc" } });
+  return prisma.category.findMany({
+    include: { parent: true, children: { orderBy: { name: "asc" } } },
+    orderBy: [{ parentId: "asc" }, { name: "asc" }]
+  });
 }
 
 export async function createCategory(input: unknown) {
@@ -21,7 +26,9 @@ export async function createCategory(input: unknown) {
       name: data.name,
       slug: data.slug || slugify(data.name),
       description: data.description,
-      image: data.image
+      image: data.image,
+      icon: data.icon,
+      parentId: data.parentId
     }
   });
 }
@@ -30,7 +37,14 @@ export async function updateCategory(id: number, input: unknown) {
   const data = catalogSchema.partial().parse(input);
   return prisma.category.update({
     where: { id },
-    data: { ...data, slug: data.slug || (data.name ? slugify(data.name) : undefined) }
+    data: {
+      name: data.name,
+      slug: data.slug || (data.name ? slugify(data.name) : undefined),
+      description: data.description,
+      image: data.image,
+      icon: data.icon,
+      parentId: data.parentId
+    }
   });
 }
 

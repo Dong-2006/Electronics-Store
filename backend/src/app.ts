@@ -1,6 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import { accountRouter } from "./routes/account.routes";
 import { adminRouter } from "./routes/admin.routes";
 import { authRouter } from "./routes/auth.routes";
 import { brandRouter } from "./routes/brand.routes";
@@ -9,6 +10,9 @@ import { categoryRouter } from "./routes/category.routes";
 import { orderRouter } from "./routes/order.routes";
 import { productRouter } from "./routes/product.routes";
 import { reviewRouter } from "./routes/review.routes";
+import { sellerRouter } from "./routes/seller.routes";
+import { shopRouter } from "./routes/shop.routes";
+import { notificationRouter } from "./routes/notification.routes";
 import { userRouter } from "./routes/user.routes";
 import { wishlistRouter } from "./routes/wishlist.routes";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
@@ -34,6 +38,10 @@ app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/wishlist", wishlistRouter);
 app.use("/api/reviews", reviewRouter);
+app.use("/api/users", accountRouter);
+app.use("/api/shops", shopRouter);
+app.use("/api/notifications", notificationRouter);
+app.use("/api/seller", sellerRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/admin/users", userRouter);
 

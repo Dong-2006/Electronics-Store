@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { Role } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../prisma/client";
 
@@ -15,7 +16,7 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Vui lòng nhập mật khẩu")
 });
 
-function signToken(user: { id: number; email: string; role: "USER" | "ADMIN" }) {
+function signToken(user: { id: number; email: string; role: Role }) {
   return jwt.sign(user, process.env.JWT_SECRET || "dev_secret", { expiresIn: "7d" });
 }
 
