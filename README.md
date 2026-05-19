@@ -1,72 +1,50 @@
-# ElectroHub - Website bán thiết bị điện tử
+# ElectroHub - Electronics Marketplace
 
-ElectroHub là project thương mại điện tử mức đồ án gồm frontend Next.js, backend Express.js, database MySQL qua Prisma ORM, xác thực NextAuth/JWT và phân quyền `USER`/`ADMIN`.
-
-## Công nghệ sử dụng
+ElectroHub la project thuong mai dien tu thiet bi dien tu gom:
 
 - Frontend: Next.js App Router, React, TypeScript, Tailwind CSS, NextAuth, Axios.
-- Backend: Node.js, Express.js, TypeScript, Prisma ORM, bcryptjs, JWT, CORS, dotenv, Zod.
+- Backend: Node.js, Express.js, TypeScript, Prisma ORM, JWT, bcryptjs, Zod.
 - Database: MySQL.
+- Roles: `USER`, `SELLER`, `ADMIN`.
 
-## Chức năng chính
+## Tinh nang chinh
 
-- Khách hàng: đăng ký, đăng nhập, xem/tìm/lọc/sort sản phẩm, xem chi tiết, thông số kỹ thuật, giỏ hàng, checkout, lịch sử đơn hàng, wishlist, đánh giá sản phẩm đã mua, so sánh 2-3 sản phẩm.
-- Admin: dashboard thống kê, quản lý sản phẩm, danh mục, thương hiệu, đơn hàng, trạng thái đơn hàng, người dùng.
-- Backend trả response JSON thống nhất:
+- Buyer: xem san pham, gio hang, checkout, lich su don hang, wishlist, review san pham da giao.
+- Seller: dang ky shop, quan ly san pham, xem dashboard, xu ly sub-order theo shop, tao voucher.
+- Admin: dashboard, quan ly user, duyet seller, duyet san pham seller, bulk upload CSV, gui notification.
+- Marketplace v2: `SubOrder`, `Voucher`, `Notification` + SSE drawer, address book, public shop page, category cha-con, product `sold/rating`.
 
-```json
-{
-  "success": true,
-  "message": "Success message",
-  "data": {}
-}
-```
+## Yeu cau local
 
-## Cấu trúc thư mục
+- Node.js 18+.
+- npm.
+- MySQL Server dang chay local.
+- Windows PowerShell nen dung `npm.cmd` va `npx.cmd` neu gap loi execution policy voi `npm`/`npx`.
 
-```txt
-electronics-store/
-├── backend/
-│   ├── prisma/
-│   │   ├── schema.prisma
-│   │   └── seed.ts
-│   └── src/
-│       ├── controllers/
-│       ├── middlewares/
-│       ├── prisma/
-│       ├── routes/
-│       ├── services/
-│       ├── utils/
-│       ├── app.ts
-│       └── server.ts
-├── frontend/
-│   ├── app/
-│   ├── components/
-│   ├── hooks/
-│   ├── lib/
-│   └── types/
-└── README.md
-```
+## 1. Tao database MySQL
 
-## Cài đặt trên Windows
-
-Yêu cầu: Node.js 18+, MySQL Server, npm.
-
-1. Tạo database MySQL:
+Dang nhap MySQL va tao database:
 
 ```sql
 CREATE DATABASE electronics_store CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-2. Cài backend:
+Neu muon lam moi hoan toan:
+
+```sql
+DROP DATABASE IF EXISTS electronics_store;
+CREATE DATABASE electronics_store CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+## 2. Cai backend
 
 ```powershell
-cd electronics-store\backend
-npm install
+cd E:\web_CNPM\electronics-store\backend
+npm.cmd install
 copy .env.example .env
 ```
 
-Sửa `backend\.env`:
+Sua `backend\.env`:
 
 ```env
 DATABASE_URL="mysql://root:password@localhost:3306/electronics_store"
@@ -75,26 +53,43 @@ PORT=5000
 FRONTEND_URL="http://localhost:3000"
 ```
 
-3. Chạy Prisma migrate và seed:
+Chay migration, generate Prisma Client va seed du lieu mau:
 
 ```powershell
-npx prisma migrate dev --name init
-npx prisma db seed
-npm run dev
+npx.cmd prisma migrate dev
+npx.cmd prisma generate
+npx.cmd prisma db seed
 ```
 
-Backend chạy tại `http://localhost:5000`.
-
-4. Cài frontend:
+Chay backend:
 
 ```powershell
-cd ..\frontend
-npm install
+npm.cmd run dev
+```
+
+Backend chay tai:
+
+```txt
+http://localhost:5000
+```
+
+Health check:
+
+```txt
+http://localhost:5000/api/health
+```
+
+## 3. Cai frontend
+
+Mo terminal PowerShell moi:
+
+```powershell
+cd E:\web_CNPM\electronics-store\frontend
+npm.cmd install
 copy .env.example .env.local
-npm run dev
 ```
 
-Sửa `frontend\.env.local` nếu cần:
+Sua `frontend\.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL="http://localhost:5000/api"
@@ -102,53 +97,191 @@ NEXTAUTH_SECRET="your_nextauth_secret"
 NEXTAUTH_URL="http://localhost:3000"
 ```
 
-Frontend chạy tại `http://localhost:3000`.
+Chay frontend:
 
-## Tài khoản mẫu
+```powershell
+npm.cmd run dev
+```
+
+Frontend chay tai:
+
+```txt
+http://localhost:3000
+```
+
+## Tai khoan mau
+
+Sau khi seed:
 
 - Admin: `admin@gmail.com` / `123456`
 - User: `user1@gmail.com` / `123456`
 - User: `user2@gmail.com` / `123456`
-- User: `user3@gmail.com` / `123456`
+- Seller: `seller1@gmail.com` / `123456`
 
-## API chính
+Seller mau co shop `TechZone Store`, slug `techzone-store`, status `APPROVED`.
 
-- Auth: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`
-- Products: `GET /api/products`, `GET /api/products/:id`, `POST /api/products`, `PUT /api/products/:id`, `DELETE /api/products/:id`
-- Categories: `GET /api/categories`, `POST /api/categories`, `PUT /api/categories/:id`, `DELETE /api/categories/:id`
-- Brands: `GET /api/brands`, `POST /api/brands`, `PUT /api/brands/:id`, `DELETE /api/brands/:id`
-- Cart: `GET /api/cart`, `POST /api/cart/items`, `PUT /api/cart/items/:id`, `DELETE /api/cart/items/:id`, `DELETE /api/cart/clear`
-- Orders: `POST /api/orders`, `GET /api/orders/my-orders`, `GET /api/orders/:id`
-- Admin orders: `GET /api/admin/orders`, `PUT /api/admin/orders/:id/status`
-- Wishlist: `GET /api/wishlist`, `POST /api/wishlist/:productId`, `DELETE /api/wishlist/:productId`
-- Reviews: `GET /api/products/:productId/reviews`, `POST /api/products/:productId/reviews`, `DELETE /api/reviews/:id`
-- Dashboard: `GET /api/admin/dashboard/stats`, `GET /api/admin/dashboard/revenue`, `GET /api/admin/dashboard/best-selling-products`
-- Users: `GET /api/admin/users`, `PUT /api/admin/users/:id/status`, `DELETE /api/admin/users/:id`
+## Route test nhanh
 
-## Ghi chú giao diện
+Public:
 
-Frontend dùng tone xanh dương, trắng, xám; header cố định, product card responsive, layout admin có sidebar. Vì repo chưa kèm screenshot, hãy chạy `npm run dev` ở frontend và truy cập:
+- `/`
+- `/products`
+- `/product/[id]`
+- `/shop/techzone-store`
+- `/cart`
+- `/checkout`
+- `/orders`
+- `/wishlist`
+- `/profile`
 
-- Trang chủ: `http://localhost:3000`
-- Sản phẩm: `http://localhost:3000/products`
-- Admin: `http://localhost:3000/admin/dashboard`
+Seller:
 
-## Scripts
+- `/seller/apply`
+- `/seller/status`
+- `/seller/dashboard`
+- `/seller/products`
+- `/seller/orders`
+- `/seller/vouchers`
+
+Admin:
+
+- `/admin/dashboard`
+- `/admin/users`
+- `/admin/sellers`
+- `/admin/product-approvals`
+- `/admin/products`
+- `/admin/orders`
+- `/admin/bulk-upload`
+- `/admin/notifications`
+
+## API chinh
+
+Auth:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+
+Catalog:
+
+- `GET /api/products`
+- `GET /api/products/:id`
+- `GET /api/categories`
+- `GET /api/brands`
+- `GET /api/shops/:slug`
+
+Buyer:
+
+- `GET /api/cart`
+- `POST /api/cart/items`
+- `PUT /api/cart/items/:id`
+- `DELETE /api/cart/items/:id`
+- `POST /api/orders`
+- `GET /api/orders/my-orders`
+- `GET /api/orders/:id`
+- `GET /api/wishlist`
+- `POST /api/wishlist/:productId`
+- `DELETE /api/wishlist/:productId`
+- `GET /api/users/profile`
+- `PUT /api/users/profile`
+- `GET /api/users/addresses`
+- `POST /api/users/addresses`
+- `PUT /api/users/addresses/:id`
+- `DELETE /api/users/addresses/:id`
+
+Notifications:
+
+- `GET /api/notifications`
+- `GET /api/notifications/stream?token=JWT_TOKEN`
+- `PUT /api/notifications/read-all`
+- `PUT /api/notifications/:id/read`
+
+Seller:
+
+- `POST /api/seller/apply`
+- `GET /api/seller/me`
+- `PUT /api/seller/profile`
+- `GET /api/seller/dashboard`
+- `GET /api/seller/products`
+- `POST /api/seller/products`
+- `PUT /api/seller/products/:id`
+- `DELETE /api/seller/products/:id`
+- `GET /api/seller/orders`
+- `PUT /api/seller/orders/:id/status`
+- `GET /api/seller/vouchers`
+- `POST /api/seller/vouchers`
+- `PUT /api/seller/vouchers/:id`
+- `PATCH /api/seller/vouchers/:id/toggle`
+- `DELETE /api/seller/vouchers/:id`
+
+Admin:
+
+- `GET /api/admin/dashboard/stats`
+- `GET /api/admin/users`
+- `PUT /api/admin/users/:id/status`
+- `GET /api/admin/sellers`
+- `PUT /api/admin/sellers/:id/approve`
+- `PUT /api/admin/sellers/:id/reject`
+- `GET /api/admin/product-approvals`
+- `PUT /api/admin/product-approvals/:id/approve`
+- `PUT /api/admin/product-approvals/:id/reject`
+- `GET /api/admin/products`
+- `POST /api/admin/products/bulk`
+- `GET /api/admin/bulk-upload/batches`
+- `GET /api/admin/bulk-upload/batches/:id/errors`
+- `POST /api/admin/notifications/broadcast`
+
+## Bulk upload CSV
+
+Admin vao `/admin/bulk-upload`, chon seller va upload CSV.
+
+Header CSV ho tro cac cot:
+
+```txt
+title,slug,price,salePrice,manufacturer,inStock,categorySlug,description,mainImage,specs
+```
+
+Vi du:
+
+```csv
+title,slug,price,salePrice,manufacturer,inStock,categorySlug,description,mainImage,specs
+Laptop ASUS Vivobook 15,laptop-asus-vivobook-15,15000000,13500000,ASUS,50,laptop,Laptop van phong,https://example.com/asus.jpg,"{""CPU"":""Intel i5"",""RAM"":""8GB""}"
+```
+
+## Lenh kiem tra
 
 Backend:
 
 ```powershell
-npm run dev
-npm run build
-npm start
-npx prisma migrate dev
-npx prisma db seed
+cd E:\web_CNPM\electronics-store\backend
+npx.cmd prisma validate
+npm.cmd run build
 ```
 
 Frontend:
 
 ```powershell
-npm run dev
-npm run build
-npm start
+cd E:\web_CNPM\electronics-store\frontend
+npm.cmd run build
 ```
+
+## Loi thuong gap
+
+Neu PowerShell bao:
+
+```txt
+npm.ps1 cannot be loaded because running scripts is disabled
+```
+
+Dung:
+
+```powershell
+npm.cmd run dev
+npx.cmd prisma migrate dev
+```
+
+Neu backend bao loi ket noi DB, kiem tra:
+
+- MySQL da chay chua.
+- `DATABASE_URL` dung user/password/database chua.
+- Da chay `npx.cmd prisma migrate dev` chua.

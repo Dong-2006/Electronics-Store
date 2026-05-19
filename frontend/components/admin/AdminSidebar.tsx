@@ -1,17 +1,21 @@
 "use client";
 
-import { Boxes, Gauge, Layers3, Package, ShoppingBag, Tags, Users } from "lucide-react";
+import { BellRing, Boxes, CheckSquare, CloudUpload, Gauge, Layers3, Package, ShoppingBag, Store, Tags, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/admin/dashboard", label: "Dashboard", icon: Gauge },
-  { href: "/admin/products", label: "Sản phẩm", icon: Package },
-  { href: "/admin/categories", label: "Danh mục", icon: Layers3 },
-  { href: "/admin/brands", label: "Thương hiệu", icon: Tags },
-  { href: "/admin/orders", label: "Đơn hàng", icon: ShoppingBag },
-  { href: "/admin/users", label: "Người dùng", icon: Users }
+  { href: "/admin/products", label: "San pham", icon: Package },
+  { href: "/admin/categories", label: "Danh muc", icon: Layers3 },
+  { href: "/admin/brands", label: "Thuong hieu", icon: Tags },
+  { href: "/admin/orders", label: "Don hang", icon: ShoppingBag },
+  { href: "/admin/sellers", label: "Seller Requests", icon: Store },
+  { href: "/admin/product-approvals", label: "Product Approvals", icon: CheckSquare },
+  { href: "/admin/bulk-upload", label: "Bulk Upload", icon: CloudUpload },
+  { href: "/admin/notifications", label: "Notifications", icon: BellRing },
+  { href: "/admin/users", label: "Nguoi dung", icon: Users }
 ];
 
 export function AdminSidebar() {

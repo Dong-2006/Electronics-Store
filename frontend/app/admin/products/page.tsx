@@ -7,9 +7,10 @@ import { DataTable } from "@/components/admin/DataTable";
 import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import { Select } from "@/components/common/Select";
+import { StatusBadge } from "@/components/common/StatusBadge";
 import { apiDelete, apiGet, apiPost, apiPut, getErrorMessage } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
-import { ApiResponse, Brand, Category, Product, Specification } from "@/types";
+import { ApiResponse, Brand, Category, Product, ProductApprovalStatus, Specification } from "@/types";
 
 type ProductsPayload = { items: Product[] };
 
@@ -23,7 +24,7 @@ const emptyForm = {
   categoryId: "",
   brandId: "",
   warrantyMonths: "12",
-  specifications: "CPU: Đang cập nhật\nRAM: Đang cập nhật\nSSD: Đang cập nhật\nMàn hình: Đang cập nhật\nPin: Đang cập nhật"
+  specifications: "CPU: Dang cap nhat\nRAM: Dang cap nhat\nSSD: Dang cap nhat"
 };
 
 export default function AdminProductsPage() {
@@ -32,11 +33,13 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [approvalStatus, setApprovalStatus] = useState("");
   const [form, setForm] = useState(emptyForm);
 
   async function load() {
+    const query = approvalStatus ? `/admin/products?limit=50&approvalStatus=${approvalStatus}` : "/admin/products?limit=50";
     const [productRes, categoryRes, brandRes] = await Promise.all([
-      apiGet<ApiResponse<ProductsPayload>>("/products?limit=50"),
+      apiGet<ApiResponse<ProductsPayload>>(query, session?.accessToken),
       apiGet<ApiResponse<Category[]>>("/categories"),
       apiGet<ApiResponse<Brand[]>>("/brands")
     ]);
@@ -46,8 +49,8 @@ export default function AdminProductsPage() {
   }
 
   useEffect(() => {
-    load().catch((error) => alert(getErrorMessage(error)));
-  }, []);
+    if (session?.accessToken) load().catch((error) => alert(getErrorMessage(error)));
+  }, [approvalStatus, session?.accessToken]);
 
   function specs(): Specification[] {
     return form.specifications
@@ -82,37 +85,43 @@ export default function AdminProductsPage() {
 
   return (
     <>
-      <AdminHeader title="Quản lý sản phẩm" />
+      <AdminHeader title="Quan ly san pham" />
+      <Select className="mb-4 max-w-xs" value={approvalStatus} onChange={(e) => setApprovalStatus(e.target.value)}>
+        <option value="">Tat ca trang thai duyet</option>
+        {(["PENDING", "APPROVED", "REJECTED", "DRAFT"] as ProductApprovalStatus[]).map((item) => <option key={item} value={item}>{item}</option>)}
+      </Select>
       <form onSubmit={submit} className="mb-6 grid gap-3 rounded-md border bg-white p-4 md:grid-cols-2">
-        <Input required placeholder="Tên sản phẩm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        <Input required placeholder="URL ảnh" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
-        <Input required type="number" placeholder="Giá" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-        <Input type="number" placeholder="Giá giảm" value={form.discountPrice} onChange={(e) => setForm({ ...form, discountPrice: e.target.value })} />
-        <Input required type="number" placeholder="Tồn kho" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
-        <Input required type="number" placeholder="Bảo hành tháng" value={form.warrantyMonths} onChange={(e) => setForm({ ...form, warrantyMonths: e.target.value })} />
+        <Input required placeholder="Ten san pham" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        <Input required placeholder="URL anh" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
+        <Input required type="number" placeholder="Gia" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+        <Input type="number" placeholder="Gia giam" value={form.discountPrice} onChange={(e) => setForm({ ...form, discountPrice: e.target.value })} />
+        <Input required type="number" placeholder="Ton kho" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+        <Input required type="number" placeholder="Bao hanh thang" value={form.warrantyMonths} onChange={(e) => setForm({ ...form, warrantyMonths: e.target.value })} />
         <Select required value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
-          <option value="">Chọn danh mục</option>
+          <option value="">Chon danh muc</option>
           {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </Select>
         <Select required value={form.brandId} onChange={(e) => setForm({ ...form, brandId: e.target.value })}>
-          <option value="">Chọn thương hiệu</option>
+          <option value="">Chon thuong hieu</option>
           {brands.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </Select>
-        <textarea className="min-h-24 rounded-md border border-slate-300 p-3 text-sm md:col-span-2" placeholder="Mô tả" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        <textarea className="min-h-24 rounded-md border border-slate-300 p-3 text-sm md:col-span-2" placeholder="Mo ta" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         <textarea className="min-h-28 rounded-md border border-slate-300 p-3 text-sm md:col-span-2" value={form.specifications} onChange={(e) => setForm({ ...form, specifications: e.target.value })} />
         <div className="flex gap-2 md:col-span-2">
-          <Button type="submit">{editingId ? "Lưu sản phẩm" : "Thêm sản phẩm"}</Button>
-          {editingId && <Button type="button" variant="secondary" onClick={() => { setEditingId(null); setForm(emptyForm); }}>Hủy</Button>}
+          <Button type="submit">{editingId ? "Luu san pham" : "Them san pham"}</Button>
+          {editingId && <Button type="button" variant="secondary" onClick={() => { setEditingId(null); setForm(emptyForm); }}>Huy</Button>}
         </div>
       </form>
-      <DataTable headers={["Tên", "Danh mục", "Thương hiệu", "Giá", "Tồn kho", "Thao tác"]}>
+      <DataTable headers={["Ten", "Shop", "Danh muc", "Thuong hieu", "Gia", "Ton kho", "Duyet", "Thao tac"]}>
         {products.map((product) => (
           <tr key={product.id}>
             <td className="px-4 py-3 font-semibold">{product.name}</td>
+            <td className="px-4 py-3">{product.seller?.shopName || "Admin"}</td>
             <td className="px-4 py-3">{product.category?.name}</td>
             <td className="px-4 py-3">{product.brand?.name}</td>
             <td className="px-4 py-3">{formatCurrency(product.discountPrice || product.price)}</td>
             <td className="px-4 py-3">{product.stock}</td>
+            <td className="px-4 py-3"><StatusBadge status={product.approvalStatus} /></td>
             <td className="space-x-2 px-4 py-3">
               <Button variant="secondary" onClick={() => {
                 setEditingId(product.id);
@@ -128,8 +137,8 @@ export default function AdminProductsPage() {
                   warrantyMonths: String(product.warrantyMonths),
                   specifications: product.specifications?.map((s) => `${s.key}: ${s.value}`).join("\n") || ""
                 });
-              }}>Sửa</Button>
-              <Button variant="danger" onClick={async () => { await apiDelete(`/products/${product.id}`, session!.accessToken); await load(); }}>Xóa</Button>
+              }}>Sua</Button>
+              <Button variant="danger" onClick={async () => { await apiDelete(`/products/${product.id}`, session!.accessToken); await load(); }}>Xoa</Button>
             </td>
           </tr>
         ))}

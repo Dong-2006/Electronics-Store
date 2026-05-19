@@ -1,0 +1,48 @@
+"use client";
+
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Loading } from "@/components/common/Loading";
+import { ProductGrid } from "@/components/product/ProductGrid";
+import { useShopActions } from "@/hooks/useShopActions";
+import { apiGet, getErrorMessage } from "@/lib/api";
+import { ApiResponse, Product, SellerProfile } from "@/types";
+
+type ShopPayload = {
+  shop: SellerProfile;
+  products: Product[];
+};
+
+export default function ShopPage() {
+  const params = useParams<{ slug: string }>();
+  const [payload, setPayload] = useState<ShopPayload | null>(null);
+  const { addToCart, addWishlist, addCompare } = useShopActions();
+
+  useEffect(() => {
+    apiGet<ApiResponse<ShopPayload>>(`/shops/${params.slug}`)
+      .then((res) => setPayload(res.data))
+      .catch((error) => alert(getErrorMessage(error)));
+  }, [params.slug]);
+
+  if (!payload) return <Loading />;
+
+  return (
+    <div>
+      <section className="relative min-h-64 bg-slate-900">
+        {payload.shop.shopBanner && <img src={payload.shop.shopBanner} alt={payload.shop.shopName} className="absolute inset-0 h-full w-full object-cover opacity-60" />}
+        <div className="relative mx-auto flex max-w-7xl items-end gap-5 px-4 py-10 text-white">
+          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-md bg-white text-3xl font-black text-primary-700">
+            {payload.shop.shopLogo ? <img src={payload.shop.shopLogo} alt={payload.shop.shopName} className="h-full w-full object-cover" /> : payload.shop.shopName[0]}
+          </div>
+          <div>
+            <h1 className="text-3xl font-black">{payload.shop.shopName}</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-100">{payload.shop.shopDescription || "Shop thiet bi dien tu tren ElectroHub"}</p>
+          </div>
+        </div>
+      </section>
+      <main className="mx-auto max-w-7xl px-4 py-8">
+        <ProductGrid products={payload.products} onAddToCart={addToCart} onWishlist={addWishlist} onCompare={addCompare} />
+      </main>
+    </div>
+  );
+}
