@@ -45,7 +45,7 @@ export default function AdminBulkUploadPage() {
     const file = event.target.files?.[0];
     if (!file) return;
     setFileName(file.name);
-    file.text().then(setCsv).catch(() => alert("Khong doc duoc file"));
+    file.text().then(setCsv).catch(() => alert("Không đọc được file"));
   }
 
   async function upload(event: FormEvent) {
@@ -59,21 +59,21 @@ export default function AdminBulkUploadPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">Bulk Upload</h1>
+      <h1 className="text-2xl font-bold">Nhập hàng loạt</h1>
       <form onSubmit={upload} className="mt-5 grid gap-4 rounded-md border bg-white p-4">
         <Select value={sellerId} onChange={(e) => setSellerId(e.target.value)}>
-          <option value="">Chon seller</option>
+          <option value="">Chọn seller</option>
           {sellers.map((seller) => <option key={seller.id} value={seller.id}>{seller.shopName}</option>)}
         </Select>
         <label className="flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed bg-slate-50 p-6 text-sm text-slate-600">
           <input className="hidden" type="file" accept=".csv,text/csv" onChange={readFile} />
-          {fileName || "Chon file CSV"}
+          {fileName || "Chọn file CSV"}
         </label>
         <Button disabled={!sellerId || !csv}>Khoi chay dong bo</Button>
       </form>
 
       <div className="mt-5">
-        <DataTable headers={["Batch", "File", "Seller", "Items", "Errors", "Status", "Ngay"]}>
+        <DataTable headers={["Lô nhập", "File", "Seller", "Items", "Errors", "Status", "Ngày"]}>
           {batches.map((batch) => (
             <tr key={batch.id}>
               <td className="px-4 py-3 font-semibold">#{batch.id}</td>

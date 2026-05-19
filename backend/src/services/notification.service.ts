@@ -79,7 +79,7 @@ export async function listNotifications(userId: number, query: Record<string, un
 
 export async function markNotificationRead(userId: number, id: number) {
   const notification = await prisma.notification.findFirst({ where: { id, userId } });
-  if (!notification) throw new Error("Khong tim thay thong bao");
+  if (!notification) throw new Error("Không tim thay thông báo");
   return prisma.notification.update({ where: { id }, data: { isRead: true } });
 }
 

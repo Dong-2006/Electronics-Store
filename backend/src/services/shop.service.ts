@@ -9,7 +9,7 @@ export async function getPublicShop(slug: string, query: Record<string, unknown>
     where: { shopSlug: slug, status: "APPROVED" },
     include: { user: { select: { id: true, name: true } }, _count: { select: { products: true } } }
   });
-  if (!shop) throw new Error("Khong tim thay shop");
+  if (!shop) throw new Error("Không tim thay shop");
 
   const where = {
     AND: [

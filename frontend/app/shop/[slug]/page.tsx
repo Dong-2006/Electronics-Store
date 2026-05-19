@@ -36,7 +36,7 @@ export default function ShopPage() {
           </div>
           <div>
             <h1 className="text-3xl font-black">{payload.shop.shopName}</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-100">{payload.shop.shopDescription || "Shop thiet bi dien tu tren ElectroHub"}</p>
+            <p className="mt-2 max-w-2xl text-sm text-slate-100">{payload.shop.shopDescription || "Shop thiết bị điện tử trên ElectroHub"}</p>
           </div>
         </div>
       </section>

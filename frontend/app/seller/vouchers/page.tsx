@@ -66,17 +66,17 @@ export default function SellerVouchersPage() {
           <option value="FIXED">FIXED</option>
           <option value="FREE_SHIP">FREE_SHIP</option>
         </Select>
-        <Input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: Number(e.target.value) })} placeholder="Gia tri" />
-        <Input type="number" value={form.minOrderValue} onChange={(e) => setForm({ ...form, minOrderValue: Number(e.target.value) })} placeholder="Don toi thieu" />
-        <Input value={form.maxDiscount} onChange={(e) => setForm({ ...form, maxDiscount: e.target.value })} placeholder="Giam toi da" />
+        <Input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: Number(e.target.value) })} placeholder="Giá trị" />
+        <Input type="number" value={form.minOrderValue} onChange={(e) => setForm({ ...form, minOrderValue: Number(e.target.value) })} placeholder="Đơn tối thiểu" />
+        <Input value={form.maxDiscount} onChange={(e) => setForm({ ...form, maxDiscount: e.target.value })} placeholder="Giảm tối đa" />
         <Input type="datetime-local" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
         <Input type="datetime-local" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
-        <Input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: Number(e.target.value) })} placeholder="Luot dung" />
-        <Button className="md:col-span-4">Tao voucher</Button>
+        <Input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: Number(e.target.value) })} placeholder="Lượt dùng" />
+        <Button className="md:col-span-4">Tạo voucher</Button>
       </form>
 
       <div className="mt-5">
-        <DataTable headers={["Code", "Loai", "Gia tri", "Don toi thieu", "Han", "Da dung", "Trang thai", "Thao tac"]}>
+        <DataTable headers={["Code", "Loại", "Giá trị", "Đơn tối thiểu", "Hạn", "Đã dùng", "Trạng thái", "Thao tác"]}>
           {vouchers.map((voucher) => (
             <tr key={voucher.id}>
               <td className="px-4 py-3 font-bold">{voucher.code}</td>
@@ -85,10 +85,10 @@ export default function SellerVouchersPage() {
               <td className="px-4 py-3">{formatCurrency(voucher.minOrderValue)}</td>
               <td className="px-4 py-3 text-xs">{new Date(voucher.endDate).toLocaleString("vi-VN")}</td>
               <td className="px-4 py-3">{voucher.usedCount}/{voucher.usageLimit}</td>
-              <td className="px-4 py-3">{voucher.isActive ? "Active" : "Off"}</td>
+              <td className="px-4 py-3">{voucher.isActive ? "Đang bật" : "Đã tắt"}</td>
               <td className="space-x-2 px-4 py-3">
-                <Button variant="secondary" onClick={() => toggle(voucher)}>{voucher.isActive ? "Tat" : "Bat"}</Button>
-                <Button variant="danger" onClick={() => remove(voucher.id)}>Xoa</Button>
+                <Button variant="secondary" onClick={() => toggle(voucher)}>{voucher.isActive ? "Tắt" : "Bật"}</Button>
+                <Button variant="danger" onClick={() => remove(voucher.id)}>Xóa</Button>
               </td>
             </tr>
           ))}

@@ -24,8 +24,8 @@ export default function SellerProductEditPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Sua san pham</h1>
-      {product.rejectReason && <p className="mb-4 rounded-md border bg-red-50 p-4 text-red-800">Ly do tu choi: {product.rejectReason}</p>}
+      <h1 className="mb-6 text-2xl font-bold">Sửa sản phẩm</h1>
+      {product.rejectReason && <p className="mb-4 rounded-md border bg-red-50 p-4 text-red-800">Lý do từ chối: {product.rejectReason}</p>}
       <SellerProductForm product={product} />
     </div>
   );

@@ -4,5 +4,5 @@ import { successResponse } from "../utils/response";
 
 export async function detail(req: Request, res: Response) {
   const data = await shopService.getPublicShop(req.params.slug, req.query);
-  return successResponse(res, "Chi tiet shop", data);
+  return successResponse(res, "Chi tiết shop", data);
 }

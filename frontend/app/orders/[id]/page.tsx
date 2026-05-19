@@ -31,15 +31,15 @@ export default function OrderDetailPage() {
       <div className="rounded-md border bg-white p-5">
         <div className="flex flex-wrap justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">Don hang #{order.id}</h1>
+            <h1 className="text-2xl font-bold">Đơn hàng #{order.id}</h1>
             <p className="text-sm text-slate-500">{new Date(order.createdAt).toLocaleString("vi-VN")}</p>
           </div>
           <StatusBadge status={order.status} />
         </div>
         <div className="mt-5 grid gap-2 text-sm md:grid-cols-2">
-          <p><b>Nguoi nhan:</b> {order.fullName}</p>
-          <p><b>Dien thoai:</b> {order.phone}</p>
-          <p><b>Dia chi:</b> {order.address}</p>
+          <p><b>Người nhận:</b> {order.fullName}</p>
+          <p><b>Điện thoại:</b> {order.phone}</p>
+          <p><b>Địa chỉ:</b> {order.address}</p>
           <p><b>Thanh toan:</b> {order.paymentMethod} - {order.paymentStatus}</p>
         </div>
       </div>
@@ -66,7 +66,7 @@ export default function OrderDetailPage() {
                 ))}
               </div>
               <div className="mt-4 flex justify-between border-t pt-4 font-bold">
-                <span>Tong shop</span>
+                <span>Tổng shop</span>
                 <span className="text-primary-700">{formatCurrency(total)}</span>
               </div>
             </section>
@@ -84,7 +84,7 @@ export default function OrderDetailPage() {
             ))}
           </div>
           <div className="mt-4 flex justify-between border-t pt-4 font-bold">
-            <span>Tong cong</span>
+            <span>Tổng cong</span>
             <span className="text-primary-700">{formatCurrency(order.totalAmount)}</span>
           </div>
         </section>

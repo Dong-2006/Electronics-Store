@@ -28,12 +28,12 @@ export default function SellerStatusPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-2xl font-bold">Trang thai seller</h1>
-      {!session && <p className="mt-4 rounded-md border bg-white p-4">Ban chua dang nhap.</p>}
+      <h1 className="text-2xl font-bold">Trạng thái seller</h1>
+      {!session && <p className="mt-4 rounded-md border bg-white p-4">Bạn chưa đăng nhập.</p>}
       {session && !profile && (
         <div className="mt-4 rounded-md border bg-white p-4">
-          <p>Ban chua dang ky seller.</p>
-          <Link className="mt-3 inline-block" href="/seller/apply"><Button>Dang ky seller</Button></Link>
+          <p>Bạn chưa đăng ký seller.</p>
+          <Link className="mt-3 inline-block" href="/seller/apply"><Button>Đăng ký seller</Button></Link>
         </div>
       )}
       {profile && (
@@ -45,8 +45,8 @@ export default function SellerStatusPage() {
             </div>
             <StatusBadge status={profile.status} />
           </div>
-          {profile.status === "REJECTED" && <p className="mt-4 text-red-700">Ly do tu choi: {profile.rejectReason || "Chua co ly do"}</p>}
-          {profile.status === "APPROVED" && <Link className="mt-4 inline-block" href="/seller/dashboard"><Button>Vao Seller Dashboard</Button></Link>}
+          {profile.status === "REJECTED" && <p className="mt-4 text-red-700">Lý do từ chối: {profile.rejectReason || "Chưa có lý do"}</p>}
+          {profile.status === "APPROVED" && <Link className="mt-4 inline-block" href="/seller/dashboard"><Button>Vào trang seller</Button></Link>}
         </div>
       )}
     </div>

@@ -1,12 +1,12 @@
 "use client";
 
-import { Bell, CheckCheck, X } from "lucide-react";
+import { AlertCircle, Bell, CheckCheck, Megaphone, PackageCheck, RefreshCw, ShoppingBag, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/common/Button";
 import { API_URL, apiGet, apiPut } from "@/lib/api";
-import { ApiResponse, Notification } from "@/types";
+import { ApiResponse, Notification, NotificationType } from "@/types";
 
 type Payload = {
   items: Notification[];
@@ -19,92 +19,166 @@ export function NotificationDrawer() {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!session?.accessToken) return;
-    const res = await apiGet<ApiResponse<Payload>>("/notifications?limit=20", session.accessToken);
-    setItems(res.data.items);
-    setUnreadCount(res.data.unreadCount);
+    setLoading(true);
+    setError("");
+    try {
+      const res = await apiGet<ApiResponse<Payload>>("/notifications?limit=20", session.accessToken);
+      setItems(res.data.items);
+      setUnreadCount(res.data.unreadCount);
+    } catch {
+      setError("Không tải được danh sách thông báo.");
+    } finally {
+      setLoading(false);
+    }
+  }, [session?.accessToken]);
+
+  function openDrawer() {
+    setOpen(true);
+    load();
   }
 
   useEffect(() => {
-    load().catch(() => undefined);
-  }, [session?.accessToken]);
+    load();
+  }, [load]);
 
   useEffect(() => {
     if (!session?.accessToken) return;
     const source = new EventSource(`${API_URL}/notifications/stream?token=${encodeURIComponent(session.accessToken)}`);
+
     source.addEventListener("notification", (event) => {
-      const notification = JSON.parse((event as MessageEvent).data) as Notification;
-      setItems((current) => [notification, ...current].slice(0, 20));
-      setUnreadCount((count) => count + 1);
+      try {
+        const notification = JSON.parse((event as MessageEvent).data) as Notification;
+        setItems((current) => [notification, ...current.filter((item) => item.id !== notification.id)].slice(0, 20));
+        setUnreadCount((count) => count + (notification.isRead ? 0 : 1));
+        setError("");
+      } catch {
+        setError("Thông báo mới không đúng định dạng.");
+      }
     });
+
+    source.onerror = () => {
+      if (open) setError("Kết nối thông báo realtime bị gián đoạn, danh sách bên dưới vẫn là dữ liệu gần nhất.");
+    };
+
     return () => source.close();
-  }, [session?.accessToken]);
+  }, [session?.accessToken, open]);
 
   async function openNotification(notification: Notification) {
     if (!session?.accessToken) return;
-    if (!notification.isRead) {
-      await apiPut(`/notifications/${notification.id}/read`, {}, session.accessToken);
-      setItems((current) => current.map((item) => item.id === notification.id ? { ...item, isRead: true } : item));
-      setUnreadCount((count) => Math.max(count - 1, 0));
-    }
-    const url = notification.metadata?.url || (notification.metadata?.orderId ? `/orders/${notification.metadata.orderId}` : "");
-    if (url) {
-      setOpen(false);
-      router.push(url);
+    try {
+      if (!notification.isRead) {
+        await apiPut(`/notifications/${notification.id}/read`, {}, session.accessToken);
+        setItems((current) => current.map((item) => item.id === notification.id ? { ...item, isRead: true } : item));
+        setUnreadCount((count) => Math.max(count - 1, 0));
+      }
+
+      const url = notification.metadata?.url || (notification.metadata?.orderId ? `/orders/${notification.metadata.orderId}` : "");
+      if (url) {
+        setOpen(false);
+        router.push(url);
+      }
+    } catch {
+      setError("Không cập nhật được trạng thái đã đọc.");
     }
   }
 
   async function markAll() {
     if (!session?.accessToken) return;
-    await apiPut("/notifications/read-all", {}, session.accessToken);
-    setItems((current) => current.map((item) => ({ ...item, isRead: true })));
-    setUnreadCount(0);
+    try {
+      await apiPut("/notifications/read-all", {}, session.accessToken);
+      setItems((current) => current.map((item) => ({ ...item, isRead: true })));
+      setUnreadCount(0);
+    } catch {
+      setError("Không thể đánh dấu tất cả đã đọc.");
+    }
   }
 
   if (!session) return null;
 
   return (
     <>
-      <button className="relative rounded-md p-2 hover:bg-slate-100" onClick={() => setOpen(true)} title="Thong bao">
+      <button className="relative rounded-md p-2 hover:bg-slate-100" onClick={openDrawer} title="Thông báo">
         <Bell className="h-5 w-5" />
-        {unreadCount > 0 && <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-500" />}
+        {unreadCount > 0 && (
+          <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-white">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
       </button>
       {open && (
         <div className="fixed inset-0 z-50">
-          <button className="absolute inset-0 bg-black/20" onClick={() => setOpen(false)} aria-label="Dong thong bao" />
-          <aside className="absolute right-0 top-0 h-full w-full max-w-md border-l bg-white shadow-xl">
-            <div className="flex h-16 items-center justify-between border-b px-4">
+          <button className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" onClick={() => setOpen(false)} aria-label="Đóng thông báo" />
+          <aside className="fixed inset-y-0 right-0 flex h-dvh w-full max-w-xl flex-col border-l border-slate-200 bg-white shadow-lift sm:w-[520px]">
+            <div className="flex min-h-20 shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-5">
               <div>
-                <h2 className="font-bold">Thong bao</h2>
-                <p className="text-xs text-slate-500">{unreadCount} chua doc</p>
+                <h2 className="text-lg font-black text-slate-950">Thông báo</h2>
+                <p className="text-xs font-semibold text-slate-500">{unreadCount} chưa đọc</p>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" className="px-3" onClick={markAll}><CheckCheck className="h-4 w-4" /></Button>
-                <Button variant="ghost" className="px-3" onClick={() => setOpen(false)}><X className="h-4 w-4" /></Button>
+                <Button variant="ghost" className="h-10 w-10 px-0" onClick={load} disabled={loading} title="Tải lại">
+                  <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+                </Button>
+                <Button variant="ghost" className="h-10 w-10 px-0" onClick={markAll} title="Đánh dấu tất cả đã đọc">
+                  <CheckCheck className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" className="h-10 w-10 px-0" onClick={() => setOpen(false)} title="Đóng">
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-            <div className="h-[calc(100%-4rem)] overflow-y-auto">
-              {items.map((item) => (
+            <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/60">
+              {error && (
+                <div className="m-4 flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+              {loading && <p className="p-6 text-sm text-slate-500">Đang tải thông báo...</p>}
+              {!loading && items.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => openNotification(item)}
-                  className="flex w-full gap-3 border-b px-4 py-3 text-left hover:bg-slate-50"
+                  className="flex w-full gap-3 border-b border-slate-100 bg-white px-5 py-4 text-left transition hover:bg-primary-50/50"
                 >
-                  <span className={`mt-1 h-2 w-2 rounded-full ${item.isRead ? "bg-slate-200" : "bg-primary-600"}`} />
+                  <NotificationIcon type={item.type} isRead={item.isRead} />
                   <span className="min-w-0 flex-1">
-                    <span className="block font-semibold">{item.title}</span>
-                    <span className="line-clamp-2 text-sm text-slate-600">{item.message}</span>
+                    <span className={item.isRead ? "block font-semibold text-slate-700" : "block font-semibold text-slate-950"}>
+                      {item.title}
+                    </span>
+                    <span className="mt-1 block whitespace-normal break-words text-sm leading-6 text-slate-600">{item.message}</span>
                     <span className="mt-1 block text-xs text-slate-400">{new Date(item.createdAt).toLocaleString("vi-VN")}</span>
                   </span>
                 </button>
               ))}
-              {!items.length && <p className="p-6 text-sm text-slate-500">Chua co thong bao.</p>}
+              {!loading && !items.length && <p className="p-6 text-sm text-slate-500">Chưa có thông báo.</p>}
             </div>
           </aside>
         </div>
       )}
     </>
+  );
+}
+
+function NotificationIcon({ type, isRead }: { type: NotificationType; isRead: boolean }) {
+  const className = isRead ? "h-4 w-4 text-slate-400" : "h-4 w-4 text-primary-700";
+  const wrapper = isRead ? "bg-slate-100" : "bg-primary-50";
+
+  const Icon = {
+    NEW_ORDER: ShoppingBag,
+    ORDER_UPDATE: PackageCheck,
+    PAYMENT_STATUS: PackageCheck,
+    PROMOTION: Megaphone,
+    SYSTEM_ALERT: AlertCircle
+  }[type];
+
+  return (
+    <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${wrapper}`}>
+      <Icon className={className} />
+    </span>
   );
 }

@@ -11,9 +11,9 @@ export default function SellerLayout({ children }: { children: ReactNode }) {
   if (simplePage) return <>{children}</>;
 
   return (
-    <div className="mx-auto flex max-w-7xl">
+    <div className="container-page flex flex-col lg:flex-row">
       <SellerSidebar />
-      <section className="flex-1 bg-slate-50 p-6">{children}</section>
+      <section className="min-w-0 flex-1 py-6 lg:p-6">{children}</section>
     </div>
   );
 }

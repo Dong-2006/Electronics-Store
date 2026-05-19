@@ -15,7 +15,7 @@ const voucherSchema = z.object({
 });
 
 function validateDateRange(startDate: Date, endDate: Date) {
-  if (startDate >= endDate) throw new Error("Ngay bat dau phai nho hon ngay ket thuc");
+  if (startDate >= endDate) throw new Error("Ngày bắt đầu phải nhỏ hơn ngày kết thúc");
 }
 
 export async function listSellerVouchers(sellerId: number) {
@@ -25,7 +25,7 @@ export async function listSellerVouchers(sellerId: number) {
 export async function createSellerVoucher(sellerId: number, input: unknown) {
   const data = voucherSchema.parse(input);
   validateDateRange(data.startDate, data.endDate);
-  if (data.type === "PERCENT" && data.value > 100) throw new Error("Voucher phan tram khong duoc lon hon 100");
+  if (data.type === "PERCENT" && data.value > 100) throw new Error("Voucher phần trăm không được lớn hơn 100");
   return prisma.voucher.create({ data: { ...data, sellerId } });
 }
 
@@ -33,7 +33,7 @@ export async function updateSellerVoucher(sellerId: number, id: number, input: u
   await ensureVoucherOwner(sellerId, id);
   const data = voucherSchema.partial().parse(input);
   if (data.startDate && data.endDate) validateDateRange(data.startDate, data.endDate);
-  if (data.type === "PERCENT" && data.value && data.value > 100) throw new Error("Voucher phan tram khong duoc lon hon 100");
+  if (data.type === "PERCENT" && data.value && data.value > 100) throw new Error("Voucher phần trăm không được lớn hơn 100");
   return prisma.voucher.update({ where: { id }, data });
 }
 
@@ -73,5 +73,5 @@ export function calculateDiscount(voucher: { type: VoucherType; value: Prisma.De
 
 async function ensureVoucherOwner(sellerId: number, id: number) {
   const voucher = await prisma.voucher.findFirst({ where: { id, sellerId } });
-  if (!voucher) throw new Error("Khong tim thay voucher");
+  if (!voucher) throw new Error("Không tim thay voucher");
 }

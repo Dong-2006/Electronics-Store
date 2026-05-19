@@ -137,7 +137,7 @@ export async function getProductById(id: number) {
       reviews: { include: { user: { select: { id: true, name: true } } }, orderBy: { createdAt: "desc" } }
     }
   });
-  if (!product) throw new Error("Khong tim thay san pham");
+  if (!product) throw new Error("Không tim thay sản phẩm");
 
   const related = await prisma.product.findMany({
     where: { ...publicProductWhere, categoryId: product.categoryId, id: { not: product.id } },

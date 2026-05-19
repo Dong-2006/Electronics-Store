@@ -4,15 +4,15 @@ import { successResponse } from "../utils/response";
 
 export async function run(req: Request, res: Response) {
   const data = await bulkUploadService.runProductBulkUpload(req.user!.id, req.body);
-  return successResponse(res, "Nhap san pham hang loat thanh cong", data, 201);
+  return successResponse(res, "Nhập sản phẩm hàng loạt thành công", data, 201);
 }
 
 export async function batches(_req: Request, res: Response) {
   const data = await bulkUploadService.listBulkBatches();
-  return successResponse(res, "Lich su nhap hang", data);
+  return successResponse(res, "Lịch sử nhập hàng", data);
 }
 
 export async function errors(req: Request, res: Response) {
   const data = await bulkUploadService.getBulkBatchErrors(Number(req.params.id));
-  return successResponse(res, "Chi tiet loi lo hang", data);
+  return successResponse(res, "Chi tiết lỗi lô hàng", data);
 }

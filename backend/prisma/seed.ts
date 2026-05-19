@@ -7,40 +7,42 @@ const prisma = new PrismaClient();
 const image = (text: string) =>
   `https://placehold.co/900x700/eff6ff/1d4ed8?text=${encodeURIComponent(text)}`;
 
+const productImage = (name: string) => `/images/products/${slugify(name)}.png`;
+
 const categories = [
-  "Dien thoai",
+  "Điện thoại",
   "Laptop",
   "Tai nghe",
-  "Ban phim",
-  "Chuot",
-  "Man hinh",
-  "Linh kien PC",
-  "Phu kien"
+  "Bàn phím",
+  "Chuột",
+  "Màn hình",
+  "Linh kiện PC",
+  "Phụ kiện"
 ];
 
 const brands = ["Apple", "Samsung", "Dell", "Asus", "Lenovo", "Sony", "Logitech", "MSI"];
 
 const products = [
-  ["iPhone 15", "Dien thoai", "Apple", 22990000, 21490000, 18, "A16 Bionic", "6GB", "128GB", "6.1 inch OLED", "iOS 17"],
-  ["Samsung Galaxy S24", "Dien thoai", "Samsung", 21990000, 19990000, 22, "Exynos 2400", "8GB", "256GB", "6.2 inch AMOLED", "Android 14"],
+  ["iPhone 15", "Điện thoại", "Apple", 22990000, 21490000, 18, "A16 Bionic", "6GB", "128GB", "6.1 inch OLED", "iOS 17"],
+  ["Samsung Galaxy S24", "Điện thoại", "Samsung", 21990000, 19990000, 22, "Exynos 2400", "8GB", "256GB", "6.2 inch AMOLED", "Android 14"],
   ["MacBook Air M2", "Laptop", "Apple", 27990000, 25990000, 12, "Apple M2", "8GB", "256GB", "13.6 inch Retina", "macOS"],
   ["Dell XPS 13", "Laptop", "Dell", 32990000, 30990000, 8, "Intel Core i7", "16GB", "512GB", "13.4 inch FHD+", "Windows 11"],
   ["Asus ROG Strix G16", "Laptop", "Asus", 39990000, 36990000, 10, "Intel Core i7", "16GB", "1TB", "16 inch 165Hz", "Windows 11"],
   ["Lenovo ThinkPad X1 Carbon", "Laptop", "Lenovo", 38990000, 35990000, 9, "Intel Core i7", "16GB", "1TB", "14 inch 2.8K", "Windows 11 Pro"],
-  ["Sony WH-1000XM5", "Tai nghe", "Sony", 8490000, 7290000, 30, "Bluetooth 5.2", "ANC", "30 gio", "Over-ear", "USB-C"],
-  ["Logitech MX Master 3S", "Chuot", "Logitech", 2490000, 2190000, 40, "Darkfield", "8000 DPI", "70 ngay", "Khong day", "USB-C"],
-  ["Logitech G Pro Keyboard", "Ban phim", "Logitech", 3290000, 2890000, 35, "GX Blue", "TKL", "RGB", "USB-C", "Windows/macOS"],
-  ["MSI Monitor 27 inch", "Man hinh", "MSI", 6490000, 5990000, 16, "IPS", "27 inch", "2K", "170Hz", "HDMI/DP"],
-  ["Apple AirPods Pro 2", "Tai nghe", "Apple", 6490000, 5790000, 28, "H2", "ANC", "6 gio", "In-ear", "MagSafe"],
-  ["Samsung Galaxy Tab S9", "Phu kien", "Samsung", 19990000, 18490000, 14, "Snapdragon 8 Gen 2", "8GB", "128GB", "11 inch AMOLED", "Android"]
+  ["Sony WH-1000XM5", "Tai nghe", "Sony", 8490000, 7290000, 30, "Bluetooth 5.2", "ANC", "30 giờ", "Over-ear", "USB-C"],
+  ["Logitech MX Master 3S", "Chuột", "Logitech", 2490000, 2190000, 40, "Darkfield", "8000 DPI", "70 ngày", "Không dây", "USB-C"],
+  ["Logitech G Pro Keyboard", "Bàn phím", "Logitech", 3290000, 2890000, 35, "GX Blue", "TKL", "RGB", "USB-C", "Windows/macOS"],
+  ["MSI Monitor 27 inch", "Màn hình", "MSI", 6490000, 5990000, 16, "IPS", "27 inch", "2K", "170Hz", "HDMI/DP"],
+  ["Apple AirPods Pro 2", "Tai nghe", "Apple", 6490000, 5790000, 28, "H2", "ANC", "6 giờ", "In-ear", "MagSafe"],
+  ["Samsung Galaxy Tab S9", "Phụ kiện", "Samsung", 19990000, 18490000, 14, "Snapdragon 8 Gen 2", "8GB", "128GB", "11 inch AMOLED", "Android"]
 ] as const;
 
 const sellerProducts = [
-  ["TechZone Gaming Mouse", "Chuot", "Logitech", 890000, 790000, 35, ProductApprovalStatus.APPROVED, null],
-  ["TechZone 27 inch IPS Monitor", "Man hinh", "MSI", 5190000, 4890000, 11, ProductApprovalStatus.APPROVED, null],
-  ["TechZone USB-C Hub Pro", "Phu kien", "Dell", 690000, null, 50, ProductApprovalStatus.PENDING, null],
-  ["TechZone Mechanical Keyboard", "Ban phim", "Asus", 1590000, 1390000, 24, ProductApprovalStatus.PENDING, null],
-  ["TechZone Refurbished Laptop", "Laptop", "Lenovo", 8990000, 7990000, 4, ProductApprovalStatus.REJECTED, "Can bo sung anh that va thong tin bao hanh ro rang."]
+  ["TechZone Gaming Mouse", "Chuột", "Logitech", 890000, 790000, 35, ProductApprovalStatus.APPROVED, null],
+  ["TechZone 27 inch IPS Monitor", "Màn hình", "MSI", 5190000, 4890000, 11, ProductApprovalStatus.APPROVED, null],
+  ["TechZone USB-C Hub Pro", "Phụ kiện", "Dell", 690000, null, 50, ProductApprovalStatus.PENDING, null],
+  ["TechZone Mechanical Keyboard", "Bàn phím", "Asus", 1590000, 1390000, 24, ProductApprovalStatus.PENDING, null],
+  ["TechZone Refurbished Laptop", "Laptop", "Lenovo", 8990000, 7990000, 4, ProductApprovalStatus.REJECTED, "Can bo sung anh that va thông tin bao hanh ro rang."]
 ] as const;
 
 async function createProduct({
@@ -70,12 +72,12 @@ async function createProduct({
     data: {
       name,
       slug: slugify(name),
-      description: `${name} la san pham dien tu chinh hang, phu hop nhu cau hoc tap, lam viec va giai tri.`,
+      description: `${name} là sản phẩm điện tử chính hãng, phù hợp nhu cầu học tập, làm việc và giải trí.`,
       price,
       discountPrice,
       stock,
-      image: image(name),
-      images: [image(`${name} 1`), image(`${name} 2`)],
+      image: productImage(name),
+      images: [productImage(name)],
       categoryId,
       brandId,
       sellerId,
@@ -87,11 +89,11 @@ async function createProduct({
       isFeatured: isFeatured ?? Number(price) > 7000000,
       specifications: {
         create: [
-          { key: "CPU", value: "Dang cap nhat" },
-          { key: "RAM", value: "Dang cap nhat" },
-          { key: "Luu tru", value: "Dang cap nhat" },
-          { key: "Man hinh", value: "Dang cap nhat" },
-          { key: "Bao hanh", value: "12 thang" }
+          { key: "CPU", value: "Đang cập nhật" },
+          { key: "RAM", value: "Đang cập nhật" },
+          { key: "Lưu trữ", value: "Đang cập nhật" },
+          { key: "Màn hình", value: "Đang cập nhật" },
+          { key: "Bảo hành", value: "12 tháng" }
         ]
       }
     }
@@ -152,7 +154,7 @@ async function main() {
       userId: sellerUser.id,
       shopName: "TechZone Store",
       shopSlug: "techzone-store",
-      shopDescription: "Cua hang thiet bi cong nghe va phu kien chon loc.",
+      shopDescription: "Cửa hàng thiết bị công nghệ và phụ kiện chọn lọc.",
       shopLogo: image("TechZone Logo"),
       shopBanner: image("TechZone Store"),
       businessPhone: "0911111111",
@@ -168,7 +170,7 @@ async function main() {
       data: {
         name,
         slug: slugify(name),
-        description: `Danh muc ${name.toLowerCase()} chinh hang`,
+        description: `Danh mục ${name.toLowerCase()} chính hãng`,
         image: image(name)
       }
     });
@@ -181,7 +183,7 @@ async function main() {
       data: {
         name,
         slug: slugify(name),
-        description: `Thiet bi dien tu thuong hieu ${name}`,
+        description: `Thiết bị điện tử thương hiệu ${name}`,
         logo: image(name)
       }
     });

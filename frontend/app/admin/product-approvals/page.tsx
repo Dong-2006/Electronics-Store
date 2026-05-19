@@ -37,19 +37,19 @@ export default function AdminProductApprovalsPage() {
 
   async function reject(id: number) {
     if (!session?.accessToken) return;
-    const rejectReason = prompt("Ly do tu choi") || "San pham chua dat yeu cau";
+    const rejectReason = prompt("Lý do từ chối") || "Sản phẩm chưa đạt yêu cầu";
     await apiPut(`/admin/product-approvals/${id}/reject`, { rejectReason }, session.accessToken);
     await load();
   }
 
   return (
     <>
-      <AdminHeader title="Product Approvals" />
+      <AdminHeader title="Duyệt sản phẩm" />
       <Select className="mb-4 max-w-xs" value={status} onChange={(e) => setStatus(e.target.value as ProductApprovalStatus | "")}>
-        <option value="">Tat ca trang thai</option>
+        <option value="">Tất cả trạng thái</option>
         {(["PENDING", "APPROVED", "REJECTED", "DRAFT"] as ProductApprovalStatus[]).map((item) => <option key={item} value={item}>{item}</option>)}
       </Select>
-      <DataTable headers={["San pham", "Seller", "Gia", "Trang thai", "Thong tin", "Thao tac"]}>
+      <DataTable headers={["Sản phẩm", "Seller", "Giá", "Trạng thái", "Thông tin", "Thao tác"]}>
         {products.map((product) => (
           <tr key={product.id}>
             <td className="px-4 py-3">
@@ -64,8 +64,8 @@ export default function AdminProductApprovalsPage() {
               {product.rejectReason && <p className="mt-1 text-red-700">{product.rejectReason}</p>}
             </td>
             <td className="space-x-2 px-4 py-3">
-              {product.approvalStatus !== "APPROVED" && <Button onClick={() => approve(product.id)}>Duyet</Button>}
-              {product.approvalStatus !== "REJECTED" && <Button variant="danger" onClick={() => reject(product.id)}>Tu choi</Button>}
+              {product.approvalStatus !== "APPROVED" && <Button onClick={() => approve(product.id)}>Duyệt</Button>}
+              {product.approvalStatus !== "REJECTED" && <Button variant="danger" onClick={() => reject(product.id)}>Từ chối</Button>}
             </td>
           </tr>
         ))}

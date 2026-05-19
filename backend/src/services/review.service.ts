@@ -26,7 +26,7 @@ export async function createReview(userId: number, productId: number, input: unk
       OR: [{ subOrder: { status: "DELIVERED" } }, { order: { status: "DELIVERED" } }]
     }
   });
-  if (!purchased) throw new Error("Ban chi co the danh gia san pham da giao thanh cong");
+  if (!purchased) throw new Error("Bạn chỉ có thể đánh giá sản phẩm đã giao thành công");
 
   const review = await prisma.review.create({
     data: {

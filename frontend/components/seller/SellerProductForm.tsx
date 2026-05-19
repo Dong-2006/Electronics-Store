@@ -21,7 +21,7 @@ const emptyForm = {
   categoryId: "",
   brandId: "",
   warrantyMonths: "12",
-  specifications: "CPU: Dang cap nhat\nRAM: Dang cap nhat\nLuu tru: Dang cap nhat"
+  specifications: "CPU: Đang cập nhật\nRAM: Đang cập nhật\nLưu trữ: Đang cập nhật"
 };
 
 export function SellerProductForm({ product }: { product?: Product }) {
@@ -87,7 +87,7 @@ export function SellerProductForm({ product }: { product?: Product }) {
     try {
       if (product) await apiPut(`/seller/products/${product.id}`, payload, session.accessToken);
       else await apiPost("/seller/products", payload, session.accessToken);
-      alert("San pham da duoc gui cho admin duyet.");
+      alert("Sản phẩm đã được gửi cho admin duyệt.");
       router.push("/seller/products");
     } catch (error) {
       alert(getErrorMessage(error));
@@ -96,25 +96,25 @@ export function SellerProductForm({ product }: { product?: Product }) {
 
   return (
     <form onSubmit={submit} className="grid gap-3 rounded-md border bg-white p-4 md:grid-cols-2">
-      <Input required placeholder="Ten san pham" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+      <Input required placeholder="Tên sản phẩm" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
       <Input placeholder="Slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
-      <Input required type="number" placeholder="Gia" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-      <Input type="number" placeholder="Gia khuyen mai" value={form.discountPrice} onChange={(e) => setForm({ ...form, discountPrice: e.target.value })} />
-      <Input required type="number" placeholder="Ton kho" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
-      <Input required type="number" placeholder="Bao hanh thang" value={form.warrantyMonths} onChange={(e) => setForm({ ...form, warrantyMonths: e.target.value })} />
+      <Input required type="number" placeholder="Giá" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+      <Input type="number" placeholder="Giá khuyến mãi" value={form.discountPrice} onChange={(e) => setForm({ ...form, discountPrice: e.target.value })} />
+      <Input required type="number" placeholder="Tồn kho" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+      <Input required type="number" placeholder="Bảo hành tháng" value={form.warrantyMonths} onChange={(e) => setForm({ ...form, warrantyMonths: e.target.value })} />
       <Select required value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })}>
-        <option value="">Chon danh muc</option>
+        <option value="">Chọn danh mục</option>
         {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
       </Select>
       <Select required value={form.brandId} onChange={(e) => setForm({ ...form, brandId: e.target.value })}>
-        <option value="">Chon thuong hieu</option>
+        <option value="">Chọn thương hiệu</option>
         {brands.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
       </Select>
-      <Input required className="md:col-span-2" placeholder="Anh chinh URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
-      <textarea className="min-h-20 rounded-md border border-slate-300 p-3 text-sm md:col-span-2" placeholder="Danh sach anh, moi URL mot dong" value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} />
-      <textarea required className="min-h-28 rounded-md border border-slate-300 p-3 text-sm md:col-span-2" placeholder="Mo ta" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-      <textarea className="min-h-28 rounded-md border border-slate-300 p-3 text-sm md:col-span-2" placeholder="Thong so key: value" value={form.specifications} onChange={(e) => setForm({ ...form, specifications: e.target.value })} />
-      <Button className="md:col-span-2" type="submit">{product ? "Luu va gui duyet lai" : "Luu va gui duyet"}</Button>
+      <Input required className="md:col-span-2" placeholder="Ảnh chính URL" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
+      <textarea className="min-h-20 rounded-md border border-slate-300 p-3 text-sm md:col-span-2" placeholder="Danh sách ảnh, mỗi URL một dòng" value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} />
+      <textarea required className="min-h-28 rounded-md border border-slate-300 p-3 text-sm md:col-span-2" placeholder="Mô tả" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+      <textarea className="min-h-28 rounded-md border border-slate-300 p-3 text-sm md:col-span-2" placeholder="Thông số key: value" value={form.specifications} onChange={(e) => setForm({ ...form, specifications: e.target.value })} />
+      <Button className="md:col-span-2" type="submit">{product ? "Lưu và gửi duyệt lại" : "Lưu và gửi duyệt"}</Button>
     </form>
   );
 }

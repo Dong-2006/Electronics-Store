@@ -55,7 +55,7 @@ export async function applySeller(userId: number, input: unknown) {
         rejectReason: null
       }
     });
-    await notifyAdmins("Seller dang ky lai", `Shop ${updated.shopName} vua gui lai ho so seller`, { sellerId: updated.id });
+    await notifyAdmins("Seller đăng ký lai", `Shop ${updated.shopName} vừa gửi lai hồ sơ seller`, { sellerId: updated.id });
     return updated;
   }
 
@@ -66,7 +66,7 @@ export async function applySeller(userId: number, input: unknown) {
       shopSlug: await uniqueShopSlug(data.shopName)
     }
   });
-  await notifyAdmins("Seller moi cho duyet", `Shop ${created.shopName} vua gui ho so seller`, { sellerId: created.id });
+  await notifyAdmins("Seller moi cho duyệt", `Shop ${created.shopName} vừa gửi hồ sơ seller`, { sellerId: created.id });
   return created;
 }
 
@@ -141,7 +141,7 @@ export async function getSellerProduct(sellerId: number, productId: number) {
     where: { id: productId, sellerId },
     include: { category: true, brand: true, specifications: true, seller: true }
   });
-  if (!product) throw new Error("Khong tim thay san pham cua shop");
+  if (!product) throw new Error("Không tim thay sản phẩm của shop");
   return product;
 }
 
@@ -224,7 +224,7 @@ export async function getSellerOrder(sellerId: number, subOrderId: number) {
       items: { include: { product: true } }
     }
   });
-  if (!subOrder) throw new Error("Khong tim thay don hang cua shop");
+  if (!subOrder) throw new Error("Không tim thay đơn hàng của shop");
   return subOrder;
 }
 
@@ -241,13 +241,13 @@ export async function updateSellerSubOrderStatus(sellerId: number, subOrderId: n
     CANCELLED: 99
   };
   if (current.status === "CANCELLED" || current.status === "DELIVERED") {
-    throw new Error("Khong the cap nhat don hang da ket thuc");
+    throw new Error("Không thể cập nhật đơn hàng đã kết thúc");
   }
   if (data.status !== "CANCELLED" && rank[data.status] < rank[current.status]) {
-    throw new Error("Khong the cap nhat lui trang thai don hang");
+    throw new Error("Không thể cập nhật lui trạng thái đơn hàng");
   }
   if (data.status === "SHIPPED" && !data.trackingNumber) throw new Error("Can nhap ma van don");
-  if (data.status === "CANCELLED" && !data.cancelReason) throw new Error("Can nhap ly do huy");
+  if (data.status === "CANCELLED" && !data.cancelReason) throw new Error("Can nhap lý do huy");
 
   const updated = await prisma.$transaction(async (tx) => {
     if (data.status === "CANCELLED") {
@@ -280,8 +280,8 @@ export async function updateSellerSubOrderStatus(sellerId: number, subOrderId: n
 
   await createNotification({
     userId: updated.order.userId,
-    title: "Cap nhat don hang",
-    message: `Don hang #${updated.orderId} tai ${updated.seller?.shopName || "shop"} da chuyen sang ${updated.status}`,
+    title: "Cập nhật đơn hàng",
+    message: `Đơn hàng #${updated.orderId} tai ${updated.seller?.shopName || "shop"} đã chuyen sang ${updated.status}`,
     type: "ORDER_UPDATE",
     metadata: { orderId: updated.orderId, subOrderId: updated.id }
   });
@@ -352,7 +352,7 @@ export async function getAdminSeller(id: number) {
       products: { include: { category: true, brand: true } }
     }
   });
-  if (!seller) throw new Error("Khong tim thay seller");
+  if (!seller) throw new Error("Không tim thay seller");
   return seller;
 }
 
@@ -367,8 +367,8 @@ export async function approveSeller(id: number) {
   });
   await createNotification({
     userId: seller.userId,
-    title: "Shop da duoc phe duyet",
-    message: `Shop ${seller.shopName} da san sang ban hang`,
+    title: "Shop đã được phê duyệt",
+    message: `Shop ${seller.shopName} đã san sang bán hàng`,
     type: "SYSTEM_ALERT",
     metadata: { sellerId: seller.id, url: "/seller/dashboard" }
   });
@@ -386,8 +386,8 @@ export async function rejectSeller(id: number, rejectReason: string) {
   });
   await createNotification({
     userId: seller.userId,
-    title: "Ho so seller bi tu choi",
-    message: rejectReason || "Admin da tu choi ho so seller cua ban",
+    title: "Hồ sơ seller bi từ chối",
+    message: rejectReason || "Admin đã từ chối hồ sơ seller của bạn",
     type: "SYSTEM_ALERT",
     metadata: { sellerId: seller.id, url: "/seller/status" }
   });

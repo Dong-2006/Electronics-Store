@@ -15,7 +15,7 @@ export async function authenticateUser(req: Request, res: Response, next: NextFu
   const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
 
   if (!token) {
-    return errorResponse(res, "Ban can dang nhap", 401);
+    return errorResponse(res, "Bạn cần đăng nhập", 401);
   }
 
   try {
@@ -26,39 +26,39 @@ export async function authenticateUser(req: Request, res: Response, next: NextFu
     });
 
     if (!user || !user.isActive) {
-      return errorResponse(res, "Tai khoan khong ton tai hoac da bi khoa", 401);
+      return errorResponse(res, "Tài khoản không tồn tại hoặc đã bị khoa", 401);
     }
 
     req.user = { id: user.id, email: user.email, role: user.role };
     next();
   } catch {
-    return errorResponse(res, "Token khong hop le", 401);
+    return errorResponse(res, "Token không hop le", 401);
   }
 }
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (req.user?.role !== "ADMIN") {
-    return errorResponse(res, "Ban khong co quyen truy cap", 403);
+    return errorResponse(res, "Bạn không co quyen truy cap", 403);
   }
   next();
 }
 
 export function requireSeller(req: Request, res: Response, next: NextFunction) {
   if (req.user?.role !== "SELLER" && req.user?.role !== "ADMIN") {
-    return errorResponse(res, "Ban can la seller de thuc hien thao tac nay", 403);
+    return errorResponse(res, "Bạn cần là seller để thực hiện thao tác này", 403);
   }
   next();
 }
 
 export async function requireApprovedSeller(req: Request, res: Response, next: NextFunction) {
-  if (!req.user) return errorResponse(res, "Ban can dang nhap", 401);
+  if (!req.user) return errorResponse(res, "Bạn cần đăng nhập", 401);
 
   const sellerProfile = await prisma.sellerProfile.findUnique({
     where: { userId: req.user.id }
   });
 
   if (!sellerProfile || sellerProfile.status !== "APPROVED") {
-    return errorResponse(res, "Shop chua duoc duyet hoac dang bi tam khoa", 403);
+    return errorResponse(res, "Shop chưa được duyệt hoặc đang bị tạm khóa", 403);
   }
 
   req.sellerProfile = sellerProfile;

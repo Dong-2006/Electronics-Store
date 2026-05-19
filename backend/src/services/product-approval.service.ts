@@ -45,7 +45,7 @@ export async function getProductApproval(id: number) {
       specifications: true
     }
   });
-  if (!product) throw new Error("Khong tim thay san pham");
+  if (!product) throw new Error("Không tim thay sản phẩm");
   return product;
 }
 
@@ -64,8 +64,8 @@ export async function approveProduct(id: number, adminId: number) {
   if (product.seller) {
     await createNotification({
       userId: product.seller.userId,
-      title: "San pham da duoc duyet",
-      message: `${product.name} da duoc hien thi tren cua hang`,
+      title: "Sản phẩm đã được duyệt",
+      message: `${product.name} đã được hiển thị trên cửa hàng`,
       type: "SYSTEM_ALERT",
       metadata: { productId: product.id, url: `/seller/products/${product.id}/edit` }
     });
@@ -86,8 +86,8 @@ export async function rejectProduct(id: number, rejectReason: string) {
   if (product.seller) {
     await createNotification({
       userId: product.seller.userId,
-      title: "San pham bi tu choi",
-      message: rejectReason || `${product.name} can chinh sua truoc khi duyet`,
+      title: "Sản phẩm bi từ chối",
+      message: rejectReason || `${product.name} can chinh sua truoc khi duyệt`,
       type: "SYSTEM_ALERT",
       metadata: { productId: product.id, url: `/seller/products/${product.id}/edit` }
     });

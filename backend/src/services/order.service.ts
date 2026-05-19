@@ -21,7 +21,7 @@ export async function createOrder(userId: number, input: unknown) {
     where: { userId },
     include: { items: { include: { product: { include: { seller: { include: { user: true } } } } } } }
   });
-  if (!cart || cart.items.length === 0) throw new Error("Gio hang dang trong");
+  if (!cart || cart.items.length === 0) throw new Error("Giỏ hàng đang trống");
 
   const order = await prisma.$transaction(async (tx) => {
     const voucherCodes = new Map((data.vouchers || []).map((voucher) => [voucher.sellerId, voucher.code]));
@@ -31,8 +31,8 @@ export async function createOrder(userId: number, input: unknown) {
       const publicProduct = await tx.product.findFirst({
         where: { id: item.productId, ...publicProductWhere }
       });
-      if (!publicProduct) throw new Error(`${item.product.name} khong con ban`);
-      if (item.product.stock < item.quantity) throw new Error(`${item.product.name} khong du ton kho`);
+      if (!publicProduct) throw new Error(`${item.product.name} không con ban`);
+      if (item.product.stock < item.quantity) throw new Error(`${item.product.name} không du ton kho`);
 
       const groupKey = item.product.sellerId ? String(item.product.sellerId) : "platform";
       groups.set(groupKey, [...(groups.get(groupKey) || []), item]);
@@ -97,8 +97,8 @@ export async function createOrder(userId: number, input: unknown) {
       if (draft.sellerId && draft.items[0]?.product.seller?.userId) {
         sellerNotifications.push({
           userId: draft.items[0].product.seller.userId,
-          title: "Don hang moi",
-          message: `Shop co don hang #${order.id} moi can xu ly`,
+          title: "Đơn hàng moi",
+          message: `Shop co đơn hàng #${order.id} moi can xu ly`,
           orderId: order.id,
           subOrderId: subOrder.id
         });
@@ -153,7 +153,7 @@ export async function getOrderById(userId: number, orderId: number, isAdmin = fa
       subOrders: { include: { seller: true, voucher: true, items: { include: { product: true } } } }
     }
   });
-  if (!order) throw new Error("Khong tim thay don hang");
+  if (!order) throw new Error("Không tim thay đơn hàng");
   return order;
 }
 

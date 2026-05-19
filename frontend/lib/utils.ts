@@ -15,10 +15,17 @@ export function formatCurrency(value: number | string | null | undefined) {
 export function statusLabel(status: string) {
   const labels: Record<string, string> = {
     PENDING: "Chờ xác nhận",
+    PROCESSING: "Đang xử lý",
     CONFIRMED: "Đã xác nhận",
     SHIPPING: "Đang giao",
+    SHIPPED: "Đã gửi hàng",
     DELIVERED: "Đã giao",
-    CANCELLED: "Đã hủy"
+    CANCELLED: "Đã hủy",
+    REFUND_REQUESTED: "Yêu cầu hoàn tiền",
+    APPROVED: "Đã duyệt",
+    REJECTED: "Từ chối",
+    DRAFT: "Bản nháp",
+    SUSPENDED: "Tạm khóa"
   };
   return labels[status] || status;
 }

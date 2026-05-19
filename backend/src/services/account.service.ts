@@ -8,13 +8,13 @@ const profileSchema = z.object({
 });
 
 const addressSchema = z.object({
-  label: z.string().min(1).default("Nha"),
+  label: z.string().min(1).default("Nhà"),
   fullName: z.string().min(2),
   phone: z.string().min(8),
   address: z.string().min(5),
   city: z.string().min(2),
   postalCode: z.string().optional().nullable(),
-  country: z.string().min(2).default("Vietnam"),
+  country: z.string().min(2).default("Việt Nam"),
   isDefault: z.boolean().optional()
 });
 
@@ -83,10 +83,10 @@ export async function setDefaultAddress(userId: number, id: number) {
 export async function changePassword(userId: number, input: unknown) {
   const data = passwordSchema.parse(input);
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw new Error("Khong tim thay tai khoan");
+  if (!user) throw new Error("Không tim thay tai khoan");
 
   const ok = await bcrypt.compare(data.currentPassword, user.password);
-  if (!ok) throw new Error("Mat khau hien tai khong dung");
+  if (!ok) throw new Error("Mật khẩu hiện tại không đúng");
 
   const password = await bcrypt.hash(data.newPassword, 10);
   await prisma.user.update({ where: { id: userId }, data: { password } });
@@ -95,5 +95,5 @@ export async function changePassword(userId: number, input: unknown) {
 
 async function ensureAddressOwner(userId: number, id: number) {
   const address = await prisma.address.findFirst({ where: { id, userId } });
-  if (!address) throw new Error("Khong tim thay dia chi");
+  if (!address) throw new Error("Không tim thay địa chỉ");
 }

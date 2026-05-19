@@ -36,12 +36,12 @@ export default function AdminSellersPage() {
 
   return (
     <>
-      <AdminHeader title="Seller Requests" />
+      <AdminHeader title="Duyệt seller" />
       <Select className="mb-4 max-w-xs" value={status} onChange={(e) => setStatus(e.target.value)}>
-        <option value="">Tat ca trang thai</option>
+        <option value="">Tất cả trạng thái</option>
         {(["PENDING", "APPROVED", "REJECTED", "SUSPENDED"] as SellerStatus[]).map((item) => <option key={item} value={item}>{item}</option>)}
       </Select>
-      <DataTable headers={["Shop", "User", "Lien he", "Trang thai", "San pham", "Thao tac"]}>
+      <DataTable headers={["Shop", "User", "Liên hệ", "Trạng thái", "Sản phẩm", "Thao tác"]}>
         {sellers.map((seller) => (
           <tr key={seller.id}>
             <td className="px-4 py-3">
@@ -54,10 +54,10 @@ export default function AdminSellersPage() {
             <td className="px-4 py-3"><StatusBadge status={seller.status} /></td>
             <td className="px-4 py-3">{seller._count?.products || 0}</td>
             <td className="space-x-2 px-4 py-3">
-              {seller.status !== "APPROVED" && <Button onClick={() => action(seller.id, "approve")}>Duyet</Button>}
-              {seller.status === "PENDING" && <Button variant="danger" onClick={() => action(seller.id, "reject", { rejectReason: prompt("Ly do tu choi") || "Khong dat yeu cau" })}>Tu choi</Button>}
-              {seller.status === "APPROVED" && <Button variant="danger" onClick={() => action(seller.id, "suspend")}>Tam khoa</Button>}
-              {seller.status === "SUSPENDED" && <Button onClick={() => action(seller.id, "reactivate")}>Mo khoa</Button>}
+              {seller.status !== "APPROVED" && <Button onClick={() => action(seller.id, "approve")}>Duyệt</Button>}
+              {seller.status === "PENDING" && <Button variant="danger" onClick={() => action(seller.id, "reject", { rejectReason: prompt("Lý do từ chối") || "Không đạt yêu cầu" })}>Từ chối</Button>}
+              {seller.status === "APPROVED" && <Button variant="danger" onClick={() => action(seller.id, "suspend")}>Tạm khóa</Button>}
+              {seller.status === "SUSPENDED" && <Button onClick={() => action(seller.id, "reactivate")}>Mở khóa</Button>}
             </td>
           </tr>
         ))}

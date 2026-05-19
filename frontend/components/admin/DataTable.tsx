@@ -8,16 +8,16 @@ export function DataTable({
   children: ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto rounded-md border bg-white">
+    <div className="overflow-x-auto rounded-md border border-slate-200 bg-white shadow-soft">
       <table className="min-w-full text-sm">
-        <thead className="bg-slate-50">
+        <thead className="bg-slate-50 text-slate-600">
           <tr>
             {headers.map((header) => (
-              <th key={header} className="px-4 py-3 text-left font-semibold">{header}</th>
+              <th key={header} className="whitespace-nowrap px-4 py-3 text-left text-xs font-bold uppercase tracking-wide">{header}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y">{children}</tbody>
+        <tbody className="divide-y divide-slate-100 text-slate-700">{children}</tbody>
       </table>
     </div>
   );

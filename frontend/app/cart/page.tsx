@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/common/Button";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Loading } from "@/components/common/Loading";
@@ -18,48 +18,65 @@ export default function CartPage() {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!session?.accessToken) return;
     const res = await apiGet<ApiResponse<Cart>>("/cart", session.accessToken);
     setCart(res.data);
     setLoading(false);
-  }
+  }, [session?.accessToken]);
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
     if (session?.accessToken) load().catch((error) => alert(getErrorMessage(error)));
-  }, [status, session]);
+  }, [status, session?.accessToken, router, load]);
 
   const total = cart?.items.reduce((sum, item) => sum + Number(item.product.discountPrice || item.product.price) * item.quantity, 0) || 0;
 
   if (loading) return <Loading />;
-  if (!cart?.items.length) return <div className="mx-auto max-w-4xl px-4 py-8"><EmptyState title="Giỏ hàng đang trống" action={<Link href="/products"><Button>Tiếp tục mua sắm</Button></Link>} /></div>;
+  if (!cart?.items.length) return <div className="container-page py-8"><EmptyState title="Giỏ hàng đang trống" action={<Link href="/products"><Button>Tiếp tục mua sắm</Button></Link>} /></div>;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="mb-5 text-2xl font-bold">Giỏ hàng</h1>
-      <div className="space-y-3">
-        {cart.items.map((item) => (
-          <CartItemRow
-            key={item.id}
-            item={item}
-            onUpdate={async (quantity) => {
-              await apiPut(`/cart/items/${item.id}`, { quantity }, session!.accessToken);
-              await load();
-            }}
-            onRemove={async () => {
-              await apiDelete(`/cart/items/${item.id}`, session!.accessToken);
-              await load();
-            }}
-          />
-        ))}
+    <div className="container-page py-8">
+      <div className="mb-6">
+        <p className="text-sm font-bold uppercase tracking-wide text-primary-700">Shopping cart</p>
+        <h1 className="section-title mt-1">Giỏ hàng của bạn</h1>
       </div>
-      <div className="mt-5 flex items-center justify-between rounded-md border bg-white p-4">
-        <span className="text-lg font-bold">Tổng tiền</span>
-        <div className="text-right">
-          <p className="text-2xl font-black text-primary-700">{formatCurrency(total)}</p>
-          <Link href="/checkout"><Button className="mt-3">Checkout</Button></Link>
+      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="space-y-3">
+          {cart.items.map((item) => (
+            <CartItemRow
+              key={item.id}
+              item={item}
+              onUpdate={async (quantity) => {
+                await apiPut(`/cart/items/${item.id}`, { quantity }, session!.accessToken);
+                await load();
+              }}
+              onRemove={async () => {
+                await apiDelete(`/cart/items/${item.id}`, session!.accessToken);
+                await load();
+              }}
+            />
+          ))}
         </div>
+        <aside className="h-fit rounded-md border border-slate-200 bg-white p-5 shadow-soft lg:sticky lg:top-24">
+          <h2 className="text-lg font-black text-slate-950">Tóm tắt đơn hàng</h2>
+          <div className="mt-4 space-y-3 border-b border-slate-100 pb-4 text-sm">
+            <div className="flex justify-between">
+              <span className="text-slate-500">Số sản phẩm</span>
+              <span className="font-bold">{cart.items.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Tạm tính</span>
+              <span className="font-bold">{formatCurrency(total)}</span>
+            </div>
+          </div>
+          <div className="mt-4 flex items-end justify-between">
+            <span className="text-sm font-bold text-slate-500">Tổng tiền</span>
+            <p className="text-2xl font-black text-primary-700">{formatCurrency(total)}</p>
+          </div>
+          <Link href="/checkout"><Button className="mt-5 w-full">Tiến hành thanh toán</Button></Link>
+          <Link href="/products" className="mt-3 block text-center text-sm font-bold text-primary-700">Tiếp tục mua sắm</Link>
+        </aside>
       </div>
     </div>
   );

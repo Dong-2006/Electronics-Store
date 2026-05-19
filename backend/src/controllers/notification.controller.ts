@@ -5,24 +5,24 @@ import { errorResponse, successResponse } from "../utils/response";
 
 export async function list(req: Request, res: Response) {
   const data = await notificationService.listNotifications(req.user!.id, req.query);
-  return successResponse(res, "Danh sach thong bao", data);
+  return successResponse(res, "Danh sách thông báo", data);
 }
 
 export async function stream(req: Request, res: Response) {
   const token = String(req.query.token || "");
   const decoded = notificationService.verifyStreamToken(token);
-  if (!decoded) return errorResponse(res, "Token khong hop le", 401);
+  if (!decoded) return errorResponse(res, "Token không hop le", 401);
   notificationService.addNotificationStream(decoded.id, res);
 }
 
 export async function markRead(req: Request, res: Response) {
   const data = await notificationService.markNotificationRead(req.user!.id, Number(req.params.id));
-  return successResponse(res, "Da danh dau da doc", data);
+  return successResponse(res, "Đã danh dau đã doc", data);
 }
 
 export async function markAllRead(req: Request, res: Response) {
   const data = await notificationService.markAllNotificationsRead(req.user!.id);
-  return successResponse(res, "Da danh dau tat ca da doc", data);
+  return successResponse(res, "Đã danh dau tat ca đã doc", data);
 }
 
 export async function broadcast(req: Request, res: Response) {
@@ -32,5 +32,5 @@ export async function broadcast(req: Request, res: Response) {
     type: (req.body.type || "SYSTEM_ALERT") as NotificationType,
     targetRole: req.body.targetRole || "ALL"
   });
-  return successResponse(res, "Da gui thong bao", data, 201);
+  return successResponse(res, "Đã gửi thông báo", data, 201);
 }

@@ -46,16 +46,16 @@ export default function SellerProductsPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Seller Products</h1>
-          <p className="mt-1 text-sm text-slate-500">Quan ly san pham cua shop.</p>
+          <h1 className="text-2xl font-bold">Sản phẩm của shop</h1>
+          <p className="mt-1 text-sm text-slate-500">Quản lý sản phẩm của shop.</p>
         </div>
-        <Link href="/seller/products/create"><Button>Them san pham</Button></Link>
+        <Link href="/seller/products/create"><Button>Thêm sản phẩm</Button></Link>
       </div>
       <Select className="mb-4 max-w-xs" value={status} onChange={(e) => setStatus(e.target.value)}>
-        <option value="">Tat ca trang thai</option>
+        <option value="">Tất cả trạng thái</option>
         {(["PENDING", "APPROVED", "REJECTED", "DRAFT"] as ProductApprovalStatus[]).map((item) => <option key={item} value={item}>{item}</option>)}
       </Select>
-      <DataTable headers={["Ten", "Gia", "Ton kho", "Trang thai", "Ly do tu choi", "Thao tac"]}>
+      <DataTable headers={["Tên", "Giá", "Tồn kho", "Trạng thái", "Lý do từ chối", "Thao tác"]}>
         {products.map((product) => (
           <tr key={product.id}>
             <td className="px-4 py-3 font-semibold">{product.name}</td>
@@ -64,9 +64,9 @@ export default function SellerProductsPage() {
             <td className="px-4 py-3"><StatusBadge status={product.approvalStatus} /></td>
             <td className="max-w-xs px-4 py-3 text-red-700">{product.rejectReason || "-"}</td>
             <td className="space-x-2 px-4 py-3">
-              <Link href={`/seller/products/${product.id}/edit`}><Button variant="secondary">Sua</Button></Link>
-              {(product.approvalStatus === "REJECTED" || product.approvalStatus === "DRAFT") && <Button onClick={() => submit(product.id)}>Gui duyet lai</Button>}
-              <Button variant="danger" onClick={() => hide(product.id)}>An</Button>
+              <Link href={`/seller/products/${product.id}/edit`}><Button variant="secondary">Sửa</Button></Link>
+              {(product.approvalStatus === "REJECTED" || product.approvalStatus === "DRAFT") && <Button onClick={() => submit(product.id)}>Gửi duyệt lại</Button>}
+              <Button variant="danger" onClick={() => hide(product.id)}>Ẩn</Button>
             </td>
           </tr>
         ))}

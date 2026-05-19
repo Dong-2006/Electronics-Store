@@ -14,10 +14,10 @@ type CsvRow = Record<string, string>;
 export async function runProductBulkUpload(adminId: number, input: unknown) {
   const data = bulkSchema.parse(input);
   const seller = await prisma.sellerProfile.findFirst({ where: { id: data.sellerId, status: "APPROVED" } });
-  if (!seller) throw new Error("Seller khong ton tai hoac chua duoc duyet");
+  if (!seller) throw new Error("Seller không tồn tại hoặc chưa được duyệt");
 
   const rows = parseCsv(data.csv);
-  if (!rows.length) throw new Error("File CSV khong co du lieu");
+  if (!rows.length) throw new Error("File CSV không có dữ liệu");
 
   return prisma.$transaction(async (tx) => {
     const batch = await tx.bulkUploadBatch.create({
@@ -75,12 +75,12 @@ async function upsertBulkProduct(tx: Prisma.TransactionClient, sellerId: number,
     const category = await findCategory(tx, row.categorySlug || row.categoryId);
     const brand = await findBrand(tx, row.brandSlug || row.brandId || row.manufacturer);
 
-    if (!name) throw new Error("Thieu ten san pham");
-    if (!slug) throw new Error("Thieu slug");
-    if (!price || price <= 0) throw new Error("Gia phai lon hon 0");
-    if (!category) throw new Error("Danh muc khong ton tai");
-    if (!brand) throw new Error("Thuong hieu khong ton tai");
-    if (!row.mainImage && !row.image) throw new Error("Thieu anh chinh");
+    if (!name) throw new Error("Thiếu ten sản phẩm");
+    if (!slug) throw new Error("Thiếu slug");
+    if (!price || price <= 0) throw new Error("Giá phải lớn hơn 0");
+    if (!category) throw new Error("Danh mục không tồn tại");
+    if (!brand) throw new Error("Thương hiệu không tồn tại");
+    if (!row.mainImage && !row.image) throw new Error("Thiếu anh chinh");
 
     const specs = parseSpecs(row.specs);
     const existing = await tx.product.findUnique({ where: { slug } });
@@ -103,7 +103,7 @@ async function upsertBulkProduct(tx: Prisma.TransactionClient, sellerId: number,
     };
 
     if (existing) {
-      if (existing.sellerId !== sellerId) throw new Error("Slug da ton tai o shop khac");
+      if (existing.sellerId !== sellerId) throw new Error("Slug đã tồn tại ở shop khác");
       await tx.productSpecification.deleteMany({ where: { productId: existing.id } });
       await tx.product.update({
         where: { id: existing.id },
@@ -115,7 +115,7 @@ async function upsertBulkProduct(tx: Prisma.TransactionClient, sellerId: number,
     await tx.product.create({ data: { ...payload, specifications: { create: specs } } });
     return { status: "CREATED" as const };
   } catch (error) {
-    return { status: "ERROR" as const, errorDescription: error instanceof Error ? error.message : "Loi khong xac dinh" };
+    return { status: "ERROR" as const, errorDescription: error instanceof Error ? error.message : "Lỗi không xac dinh" };
   }
 }
 

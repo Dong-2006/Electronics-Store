@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn, statusLabel } from "@/lib/utils";
 import { OrderStatus, ProductApprovalStatus, SellerStatus, SubOrderStatus } from "@/types";
 
 type Status = ProductApprovalStatus | SellerStatus | SubOrderStatus | OrderStatus;
@@ -20,8 +20,8 @@ const colors: Record<Status, string> = {
 
 export function StatusBadge({ status, className }: { status: Status; className?: string }) {
   return (
-    <span className={cn("inline-flex rounded-md px-2 py-1 text-xs font-bold", colors[status], className)}>
-      {status}
+    <span className={cn("inline-flex rounded-md px-2.5 py-1 text-xs font-bold", colors[status], className)}>
+      {statusLabel(status)}
     </span>
   );
 }

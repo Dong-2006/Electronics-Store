@@ -28,8 +28,8 @@ export default function SellerOrdersPage() {
 
   async function updateStatus(order: SubOrder, status: SubOrderStatus) {
     if (!session?.accessToken) return;
-    const trackingNumber = status === "SHIPPED" ? window.prompt("Ma van don") || "" : undefined;
-    const cancelReason = status === "CANCELLED" ? window.prompt("Ly do huy") || "" : undefined;
+    const trackingNumber = status === "SHIPPED" ? window.prompt("Mã vận đơn") || "" : undefined;
+    const cancelReason = status === "CANCELLED" ? window.prompt("Lý do huy") || "" : undefined;
     await apiPut(`/seller/orders/${order.id}/status`, { status, trackingNumber, cancelReason }, session.accessToken);
     await load();
   }
@@ -37,9 +37,9 @@ export default function SellerOrdersPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold">Seller Orders</h1>
-      <p className="mt-1 text-sm text-slate-500">Xu ly tung sub-order cua shop.</p>
+      <p className="mt-1 text-sm text-slate-500">Xu ly tung sub-order của shop.</p>
       <div className="mt-5">
-        <DataTable headers={["Ma", "Khach", "San pham", "Tong", "Trang thai", "Cap nhat"]}>
+        <DataTable headers={["Mã", "Khách", "Sản phẩm", "Tổng", "Trạng thái", "Cập nhật"]}>
           {orders.map((order) => {
             const total = Number(order.subTotal) + Number(order.shippingFee) - Number(order.discountAmount);
             return (
