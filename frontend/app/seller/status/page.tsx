@@ -6,11 +6,13 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/common/Button";
 import { Loading } from "@/components/common/Loading";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { useToast } from "@/components/common/Toast";
 import { apiGet, getErrorMessage } from "@/lib/api";
 import { ApiResponse, SellerProfile } from "@/types";
 
 export default function SellerStatusPage() {
   const { data: session, status } = useSession();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<SellerProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,7 +20,7 @@ export default function SellerStatusPage() {
     if (status === "authenticated") {
       apiGet<ApiResponse<SellerProfile | null>>("/seller/me", session!.accessToken)
         .then((res) => setProfile(res.data))
-        .catch((error) => alert(getErrorMessage(error)))
+        .catch((error) => toast({ title: "Không tải được trạng thái seller", description: getErrorMessage(error), variant: "error" }))
         .finally(() => setLoading(false));
     }
     if (status === "unauthenticated") setLoading(false);

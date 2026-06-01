@@ -25,7 +25,17 @@ export function statusLabel(status: string) {
     APPROVED: "Đã duyệt",
     REJECTED: "Từ chối",
     DRAFT: "Bản nháp",
-    SUSPENDED: "Tạm khóa"
+    SUSPENDED: "Tạm khóa",
+    COD: "Thanh toán khi nhận hàng",
+    BANK_TRANSFER: "Chuyển khoản",
+    VNPAY: "VNPAY",
+    MOMO: "MoMo",
+    UNPAID: "Chưa thanh toán",
+    PAID: "Đã thanh toán",
+    FAILED: "Thanh toán lỗi",
+    REFUNDED: "Đã hoàn tiền",
+    ACTIVE: "Đang bật",
+    INACTIVE: "Đã tắt"
   };
   return labels[status] || status;
 }

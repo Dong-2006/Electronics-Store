@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loading } from "@/components/common/Loading";
+import { useToast } from "@/components/common/Toast";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { useShopActions } from "@/hooks/useShopActions";
 import { apiGet, getErrorMessage } from "@/lib/api";
@@ -15,14 +16,15 @@ type ShopPayload = {
 
 export default function ShopPage() {
   const params = useParams<{ slug: string }>();
+  const { toast } = useToast();
   const [payload, setPayload] = useState<ShopPayload | null>(null);
   const { addToCart, addWishlist, addCompare } = useShopActions();
 
   useEffect(() => {
     apiGet<ApiResponse<ShopPayload>>(`/shops/${params.slug}`)
       .then((res) => setPayload(res.data))
-      .catch((error) => alert(getErrorMessage(error)));
-  }, [params.slug]);
+      .catch((error) => toast({ title: "Không tải được shop", description: getErrorMessage(error), variant: "error" }));
+  }, [params.slug, toast]);
 
   if (!payload) return <Loading />;
 

@@ -1,4 +1,5 @@
-import { Router } from "express";
+import express, { Router } from "express";
+import * as bulkUploadController from "../controllers/bulk-upload.controller";
 import * as sellerController from "../controllers/seller.controller";
 import * as voucherController from "../controllers/voucher.controller";
 import { authenticateUser, requireApprovedSeller, requireSeller } from "../middlewares/auth.middleware";
@@ -13,6 +14,13 @@ sellerRouter.put("/profile", requireSeller, asyncHandler(requireApprovedSeller),
 sellerRouter.get("/dashboard", requireSeller, asyncHandler(requireApprovedSeller), asyncHandler(sellerController.dashboard));
 sellerRouter.get("/products", requireSeller, asyncHandler(requireApprovedSeller), asyncHandler(sellerController.products));
 sellerRouter.post("/products", requireSeller, asyncHandler(requireApprovedSeller), asyncHandler(sellerController.createProduct));
+sellerRouter.post(
+  "/products/bulk-upload",
+  requireSeller,
+  asyncHandler(requireApprovedSeller),
+  express.text({ type: ["text/csv", "text/plain"], limit: "1mb" }),
+  asyncHandler(bulkUploadController.sellerRun)
+);
 sellerRouter.get("/products/:id", requireSeller, asyncHandler(requireApprovedSeller), asyncHandler(sellerController.productDetail));
 sellerRouter.put("/products/:id", requireSeller, asyncHandler(requireApprovedSeller), asyncHandler(sellerController.updateProduct));
 sellerRouter.delete("/products/:id", requireSeller, asyncHandler(requireApprovedSeller), asyncHandler(sellerController.deleteProduct));

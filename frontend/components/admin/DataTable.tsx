@@ -1,14 +1,26 @@
 import { ReactNode } from "react";
+import { EmptyState } from "@/components/common/EmptyState";
 
 export function DataTable({
   headers,
-  children
+  children,
+  empty,
+  emptyTitle = "Chưa có dữ liệu",
+  emptyDescription = "Dữ liệu sẽ hiển thị tại đây sau khi được tạo hoặc tải từ hệ thống."
 }: {
   headers: string[];
   children: ReactNode;
+  empty?: boolean;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }) {
+  if (empty) {
+    return <EmptyState title={emptyTitle} description={emptyDescription} />;
+  }
+
   return (
-    <div className="overflow-x-auto rounded-md border border-slate-200 bg-white shadow-soft">
+    <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-soft">
+      <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
         <thead className="bg-slate-50 text-slate-600">
           <tr>
@@ -17,8 +29,9 @@ export function DataTable({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 text-slate-700">{children}</tbody>
+        <tbody className="divide-y divide-slate-100 text-slate-700 [&_tr]:transition [&_tr:hover]:bg-primary-50/30">{children}</tbody>
       </table>
+      </div>
     </div>
   );
 }

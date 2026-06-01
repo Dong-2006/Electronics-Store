@@ -5,9 +5,12 @@ import { FormEvent, useEffect, useState } from "react";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DataTable } from "@/components/admin/DataTable";
 import { Button } from "@/components/common/Button";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Input } from "@/components/common/Input";
 import { Select } from "@/components/common/Select";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { TableSkeleton } from "@/components/common/Skeleton";
+import { useToast } from "@/components/common/Toast";
 import { apiDelete, apiGet, apiPost, apiPut, getErrorMessage } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { ApiResponse, Brand, Category, Product, ProductApprovalStatus, Specification } from "@/types";
@@ -29,27 +32,37 @@ const emptyForm = {
 
 export default function AdminProductsPage() {
   const { data: session } = useSession();
+  const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [approvalStatus, setApprovalStatus] = useState("");
   const [form, setForm] = useState(emptyForm);
+  const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   async function load() {
+    setLoading(true);
     const query = approvalStatus ? `/admin/products?limit=50&approvalStatus=${approvalStatus}` : "/admin/products?limit=50";
-    const [productRes, categoryRes, brandRes] = await Promise.all([
-      apiGet<ApiResponse<ProductsPayload>>(query, session?.accessToken),
-      apiGet<ApiResponse<Category[]>>("/categories"),
-      apiGet<ApiResponse<Brand[]>>("/brands")
-    ]);
-    setProducts(productRes.data.items);
-    setCategories(categoryRes.data);
-    setBrands(brandRes.data);
+    try {
+      const [productRes, categoryRes, brandRes] = await Promise.all([
+        apiGet<ApiResponse<ProductsPayload>>(query, session?.accessToken),
+        apiGet<ApiResponse<Category[]>>("/categories"),
+        apiGet<ApiResponse<Brand[]>>("/brands")
+      ]);
+      setProducts(productRes.data.items);
+      setCategories(categoryRes.data);
+      setBrands(brandRes.data);
+    } catch (error) {
+      toast({ title: "Không tải được sản phẩm", description: getErrorMessage(error), variant: "error" });
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    if (session?.accessToken) load().catch((error) => alert(getErrorMessage(error)));
+    if (session?.accessToken) load();
   }, [approvalStatus, session?.accessToken]);
 
   function specs(): Specification[] {
@@ -77,9 +90,22 @@ export default function AdminProductsPage() {
       else await apiPost("/products", payload, session!.accessToken);
       setForm(emptyForm);
       setEditingId(null);
+      toast({ title: editingId ? "Đã cập nhật sản phẩm" : "Đã thêm sản phẩm", variant: "success" });
       await load();
     } catch (error) {
-      alert(getErrorMessage(error));
+      toast({ title: "Không thể lưu sản phẩm", description: getErrorMessage(error), variant: "error" });
+    }
+  }
+
+  async function remove() {
+    if (!deleteId || !session?.accessToken) return;
+    try {
+      await apiDelete(`/products/${deleteId}`, session.accessToken);
+      setDeleteId(null);
+      toast({ title: "Đã xóa sản phẩm", variant: "success" });
+      await load();
+    } catch (error) {
+      toast({ title: "Không thể xóa sản phẩm", description: getErrorMessage(error), variant: "error" });
     }
   }
 
@@ -112,7 +138,7 @@ export default function AdminProductsPage() {
           {editingId && <Button type="button" variant="secondary" onClick={() => { setEditingId(null); setForm(emptyForm); }}>Hủy</Button>}
         </div>
       </form>
-      <DataTable headers={["Tên", "Shop", "Danh mục", "Thương hiệu", "Giá", "Tồn kho", "Duyệt", "Thao tác"]}>
+      {loading ? <TableSkeleton rows={6} columns={8} /> : <DataTable headers={["Tên", "Shop", "Danh mục", "Thương hiệu", "Giá", "Tồn kho", "Duyệt", "Thao tác"]} empty={!products.length}>
         {products.map((product) => (
           <tr key={product.id}>
             <td className="px-4 py-3 font-semibold">{product.name}</td>
@@ -138,11 +164,19 @@ export default function AdminProductsPage() {
                   specifications: product.specifications?.map((s) => `${s.key}: ${s.value}`).join("\n") || ""
                 });
               }}>Sửa</Button>
-              <Button variant="danger" onClick={async () => { await apiDelete(`/products/${product.id}`, session!.accessToken); await load(); }}>Xóa</Button>
+              <Button variant="danger" onClick={() => setDeleteId(product.id)}>Xóa</Button>
             </td>
           </tr>
         ))}
-      </DataTable>
+      </DataTable>}
+      <ConfirmDialog
+        open={deleteId !== null}
+        title="Xóa sản phẩm?"
+        description="Sản phẩm sẽ bị ẩn/xóa khỏi danh sách công khai theo logic backend hiện tại."
+        confirmLabel="Xóa"
+        onClose={() => setDeleteId(null)}
+        onConfirm={remove}
+      />
     </>
   );
 }

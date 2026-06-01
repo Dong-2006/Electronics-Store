@@ -1,9 +1,11 @@
-import { Heart, Scale, ShoppingCart, Star } from "lucide-react";
+import { Heart, Scale, ShoppingCart, Store } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Badge } from "@/components/common/Badge";
 import { getProductImage } from "@/lib/product-images";
 import { Product } from "@/types";
-import { formatCurrency } from "@/lib/utils";
+import { ProductPrice } from "./ProductPrice";
+import { RatingStars } from "./RatingStars";
 
 export function ProductCard({
   product,
@@ -16,15 +18,16 @@ export function ProductCard({
   onWishlist?: (product: Product) => void;
   onCompare?: (product: Product) => void;
 }) {
-  const finalPrice = product.discountPrice || product.price;
   const hasDiscount = Boolean(product.discountPrice);
 
   return (
-    <article className="group overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lift">
-      <Link href={`/product/${product.id}`} className="relative block aspect-[4/3] overflow-hidden bg-slate-100">
-        <Image src={getProductImage(product)} alt={product.name} fill className="object-cover transition duration-500 group-hover:scale-105" />
-        {hasDiscount && <span className="absolute left-3 top-3 rounded-md bg-red-600 px-2 py-1 text-xs font-bold text-white">Sale</span>}
-        {product.isFeatured && <span className="absolute right-3 top-3 rounded-md bg-primary-600 px-2 py-1 text-xs font-bold text-white">Nổi bật</span>}
+    <article className="group overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-lift">
+      <Link href={`/product/${product.id}`} className="relative block aspect-[4/3] overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100">
+        <Image src={getProductImage(product)} alt={product.name} fill className="object-contain p-5 transition duration-500 group-hover:scale-105" />
+        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+          {hasDiscount && <Badge variant="danger" className="shadow-sm">Sale</Badge>}
+          {product.isFeatured && <Badge variant="primary" className="shadow-sm">Nổi bật</Badge>}
+        </div>
       </Link>
       <div className="space-y-3 p-4">
         <div>
@@ -33,16 +36,18 @@ export function ProductCard({
             {product.name}
           </Link>
         </div>
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1 text-sm font-semibold text-amber-600">
-            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-            <span>{Number(product.rating || 0).toFixed(1)}</span>
-            <span className="text-slate-400">| Đã bán {product.sold || 0}</span>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <RatingStars rating={Number(product.rating || 0)} />
+          <span className="text-xs font-semibold text-slate-400">Đã bán {product.sold || 0}</span>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <span className="text-lg font-black text-primary-700">{formatCurrency(finalPrice)}</span>
-          {hasDiscount && <span className="text-sm text-slate-400 line-through">{formatCurrency(product.price)}</span>}
+        {product.seller?.shopName && (
+          <Link href={`/shop/${product.seller.shopSlug}`} className="inline-flex max-w-full items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600 hover:bg-primary-50 hover:text-primary-700">
+            <Store className="h-3 w-3" />
+            <span className="truncate">{product.seller.shopName}</span>
+          </Link>
+        )}
+        <div>
+          <ProductPrice price={product.price} discountPrice={product.discountPrice} size="sm" />
         </div>
         <p className={product.stock > 0 ? "text-sm font-semibold text-emerald-600" : "text-sm font-semibold text-red-600"}>
           {product.stock > 0 ? `Còn ${product.stock} sản phẩm` : "Hết hàng"}

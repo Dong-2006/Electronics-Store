@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { DataTable } from "@/components/admin/DataTable";
 import { Button } from "@/components/common/Button";
 import { Select } from "@/components/common/Select";
+import { useToast } from "@/components/common/Toast";
 import { apiGet, apiPost, getErrorMessage } from "@/lib/api";
 import { ApiResponse, SellerProfile } from "@/types";
 
@@ -21,6 +22,7 @@ type Batch = {
 
 export default function AdminBulkUploadPage() {
   const { data: session } = useSession();
+  const { toast } = useToast();
   const [sellers, setSellers] = useState<SellerProfile[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [sellerId, setSellerId] = useState("");
@@ -38,23 +40,28 @@ export default function AdminBulkUploadPage() {
   }
 
   useEffect(() => {
-    load().catch((error) => alert(getErrorMessage(error)));
+    load().catch((error) => toast({ title: "Không tải được dữ liệu nhập hàng", description: getErrorMessage(error), variant: "error" }));
   }, [session?.accessToken]);
 
   function readFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     setFileName(file.name);
-    file.text().then(setCsv).catch(() => alert("Không đọc được file"));
+    file.text().then(setCsv).catch(() => toast({ title: "Không đọc được file", variant: "error" }));
   }
 
   async function upload(event: FormEvent) {
     event.preventDefault();
     if (!session?.accessToken || !sellerId || !csv) return;
-    await apiPost("/admin/products/bulk", { sellerId, fileName, csv }, session.accessToken);
-    setCsv("");
-    setFileName("");
-    await load();
+    try {
+      await apiPost("/admin/products/bulk", { sellerId, fileName, csv }, session.accessToken);
+      toast({ title: "Đã xử lý file CSV", variant: "success" });
+      setCsv("");
+      setFileName("");
+      await load();
+    } catch (error) {
+      toast({ title: "Không thể xử lý CSV", description: getErrorMessage(error), variant: "error" });
+    }
   }
 
   return (

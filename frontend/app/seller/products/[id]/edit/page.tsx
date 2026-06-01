@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Loading } from "@/components/common/Loading";
+import { useToast } from "@/components/common/Toast";
 import { SellerProductForm } from "@/components/seller/SellerProductForm";
 import { apiGet, getErrorMessage } from "@/lib/api";
 import { ApiResponse, Product } from "@/types";
@@ -11,13 +12,14 @@ import { ApiResponse, Product } from "@/types";
 export default function SellerProductEditPage() {
   const { id } = useParams<{ id: string }>();
   const { data: session } = useSession();
+  const { toast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     if (!session?.accessToken) return;
     apiGet<ApiResponse<Product>>(`/seller/products/${id}`, session.accessToken)
       .then((res) => setProduct(res.data))
-      .catch((error) => alert(getErrorMessage(error)));
+      .catch((error) => toast({ title: "Không tải được sản phẩm", description: getErrorMessage(error), variant: "error" }));
   }, [id, session]);
 
   if (!product) return <Loading />;

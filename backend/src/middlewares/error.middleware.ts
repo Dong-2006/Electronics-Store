@@ -17,5 +17,14 @@ export function errorHandler(
   }
 
   const message = error instanceof Error ? error.message : "Lỗi server";
-  return errorResponse(res, message, 500);
+  return errorResponse(res, message, getErrorStatus(error));
+}
+
+function getErrorStatus(error: unknown) {
+  if (typeof error === "object" && error && "status" in error) {
+    const status = Number((error as { status?: unknown }).status);
+    if (Number.isInteger(status) && status >= 400 && status < 600) return status;
+  }
+
+  return 500;
 }

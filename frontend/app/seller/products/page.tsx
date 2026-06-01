@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { PlusCircle } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
+import { DataTable } from "@/components/admin/DataTable";
+import { TableToolbar } from "@/components/admin/TableToolbar";
 import { Button } from "@/components/common/Button";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Select } from "@/components/common/Select";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { DataTable } from "@/components/admin/DataTable";
+import { TableSkeleton } from "@/components/common/Skeleton";
+import { useToast } from "@/components/common/Toast";
+import { SellerBulkUploadPanel } from "@/components/seller/SellerBulkUploadPanel";
 import { apiDelete, apiGet, apiPut, getErrorMessage } from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
 import { ApiResponse, Product, ProductApprovalStatus } from "@/types";
@@ -15,62 +21,125 @@ type ProductsPayload = { items: Product[] };
 
 export default function SellerProductsPage() {
   const { data: session } = useSession();
+  const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(() => typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("status") || "" : "");
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [hideId, setHideId] = useState<number | null>(null);
+  const [submittingId, setSubmittingId] = useState<number | null>(null);
 
-  const query = useMemo(() => status ? `?approvalStatus=${status}&limit=50` : "?limit=50", [status]);
+  const query = useMemo(() => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("limit", "50");
+    if (status) searchParams.set("approvalStatus", status);
+    if (search.trim()) searchParams.set("search", search.trim());
+    return `?${searchParams.toString()}`;
+  }, [status, search]);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!session?.accessToken) return;
-    const res = await apiGet<ApiResponse<ProductsPayload>>(`/seller/products${query}`, session.accessToken);
-    setProducts(res.data.items);
-  }
+    setLoading(true);
+    try {
+      const res = await apiGet<ApiResponse<ProductsPayload>>(`/seller/products${query}`, session.accessToken);
+      setProducts(res.data.items);
+    } catch (error) {
+      toast({ title: "Không tải được sản phẩm shop", description: getErrorMessage(error), variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }, [query, session?.accessToken, toast]);
 
   useEffect(() => {
-    load().catch((error) => alert(getErrorMessage(error)));
-  }, [session, query]);
+    load();
+  }, [load]);
 
-  async function hide(id: number) {
-    if (!session?.accessToken) return;
-    await apiDelete(`/seller/products/${id}`, session.accessToken);
-    await load();
+  async function hide() {
+    if (!session?.accessToken || !hideId) return;
+    try {
+      await apiDelete(`/seller/products/${hideId}`, session.accessToken);
+      toast({ title: "Đã ẩn sản phẩm", variant: "success" });
+      setHideId(null);
+      await load();
+    } catch (error) {
+      toast({ title: "Không thể ẩn sản phẩm", description: getErrorMessage(error), variant: "error" });
+    }
   }
 
   async function submit(id: number) {
     if (!session?.accessToken) return;
-    await apiPut(`/seller/products/${id}/submit`, {}, session.accessToken);
-    await load();
+    setSubmittingId(id);
+    try {
+      await apiPut(`/seller/products/${id}/submit`, {}, session.accessToken);
+      toast({ title: "Đã gửi duyệt sản phẩm", variant: "success" });
+      await load();
+    } catch (error) {
+      toast({ title: "Không thể gửi duyệt", description: getErrorMessage(error), variant: "error" });
+    } finally {
+      setSubmittingId(null);
+    }
   }
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Sản phẩm của shop</h1>
-          <p className="mt-1 text-sm text-slate-500">Quản lý sản phẩm của shop.</p>
+          <p className="muted-label text-emerald-700">Seller products</p>
+          <h1 className="text-3xl font-black text-slate-950">Sản phẩm của shop</h1>
+          <p className="mt-1 text-sm text-slate-500">Quản lý sản phẩm, trạng thái duyệt và nhập hàng loạt.</p>
         </div>
-        <Link href="/seller/products/create"><Button>Thêm sản phẩm</Button></Link>
+        <Link href="/seller/products/create"><Button><PlusCircle className="h-4 w-4" /> Thêm sản phẩm</Button></Link>
       </div>
-      <Select className="mb-4 max-w-xs" value={status} onChange={(e) => setStatus(e.target.value)}>
-        <option value="">Tất cả trạng thái</option>
-        {(["PENDING", "APPROVED", "REJECTED", "DRAFT"] as ProductApprovalStatus[]).map((item) => <option key={item} value={item}>{item}</option>)}
-      </Select>
-      <DataTable headers={["Tên", "Giá", "Tồn kho", "Trạng thái", "Lý do từ chối", "Thao tác"]}>
-        {products.map((product) => (
-          <tr key={product.id}>
-            <td className="px-4 py-3 font-semibold">{product.name}</td>
-            <td className="px-4 py-3">{formatCurrency(product.discountPrice || product.price)}</td>
-            <td className="px-4 py-3">{product.stock}</td>
-            <td className="px-4 py-3"><StatusBadge status={product.approvalStatus} /></td>
-            <td className="max-w-xs px-4 py-3 text-red-700">{product.rejectReason || "-"}</td>
-            <td className="space-x-2 px-4 py-3">
-              <Link href={`/seller/products/${product.id}/edit`}><Button variant="secondary">Sửa</Button></Link>
-              {(product.approvalStatus === "REJECTED" || product.approvalStatus === "DRAFT") && <Button onClick={() => submit(product.id)}>Gửi duyệt lại</Button>}
-              <Button variant="danger" onClick={() => hide(product.id)}>Ẩn</Button>
-            </td>
-          </tr>
-        ))}
-      </DataTable>
+
+      <SellerBulkUploadPanel token={session?.accessToken} onUploaded={load} />
+
+      <TableToolbar
+        title="Danh sách sản phẩm"
+        description="Tìm kiếm, lọc trạng thái và xử lý sản phẩm."
+        search={search}
+        searchPlaceholder="Tìm sản phẩm..."
+        onSearchChange={setSearch}
+        filters={
+          <Select className="w-56" value={status} onChange={(event) => setStatus(event.target.value)}>
+            <option value="">Tất cả trạng thái</option>
+            {(["PENDING", "APPROVED", "REJECTED", "DRAFT"] as ProductApprovalStatus[]).map((item) => <option key={item} value={item}>{item}</option>)}
+          </Select>
+        }
+      />
+
+      {loading ? (
+        <TableSkeleton rows={6} columns={6} />
+      ) : (
+        <DataTable headers={["Tên", "Giá", "Tồn kho", "Trạng thái", "Lý do từ chối", "Thao tác"]} empty={!products.length} emptyTitle="Chưa có sản phẩm nào">
+          {products.map((product) => (
+            <tr key={product.id}>
+              <td className="px-4 py-3 font-semibold">{product.name}</td>
+              <td className="px-4 py-3">{formatCurrency(product.discountPrice || product.price)}</td>
+              <td className="px-4 py-3">{product.stock}</td>
+              <td className="px-4 py-3"><StatusBadge status={product.approvalStatus} /></td>
+              <td className="max-w-xs px-4 py-3 text-red-700">{product.rejectReason || "-"}</td>
+              <td className="px-4 py-3">
+                <div className="flex flex-wrap gap-2">
+                  <Link href={`/seller/products/${product.id}/edit`}><Button size="sm" variant="secondary">Sửa</Button></Link>
+                  {(product.approvalStatus === "REJECTED" || product.approvalStatus === "DRAFT") && (
+                    <Button size="sm" onClick={() => submit(product.id)} isLoading={submittingId === product.id}>Gửi duyệt</Button>
+                  )}
+                  <Button size="sm" variant="danger" onClick={() => setHideId(product.id)}>Ẩn</Button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </DataTable>
+      )}
+
+      <ConfirmDialog
+        open={hideId !== null}
+        title="Ẩn sản phẩm?"
+        description="Sản phẩm sẽ không còn hiển thị công khai. Bạn có thể chỉnh sửa và gửi duyệt lại sau."
+        confirmLabel="Ẩn sản phẩm"
+        onClose={() => setHideId(null)}
+        onConfirm={hide}
+      />
     </div>
   );
 }

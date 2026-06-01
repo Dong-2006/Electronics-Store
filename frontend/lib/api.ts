@@ -17,6 +17,17 @@ export async function apiPost<T>(url: string, data?: unknown, token?: string) {
   return res.data;
 }
 
+export async function apiPostCsv<T>(url: string, csv: string, token: string, fileName: string) {
+  const res = await api.post<T>(url, csv, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "text/csv; charset=utf-8",
+      "X-File-Name": encodeURIComponent(fileName)
+    }
+  });
+  return res.data;
+}
+
 export async function apiPut<T>(url: string, data?: unknown, token?: string) {
   const res = await api.put<T>(url, data, authConfig(token));
   return res.data;

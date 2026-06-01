@@ -7,6 +7,7 @@ import { Button } from "@/components/common/Button";
 import { Input } from "@/components/common/Input";
 import { Loading } from "@/components/common/Loading";
 import { StatusBadge } from "@/components/common/StatusBadge";
+import { useToast } from "@/components/common/Toast";
 import { apiGet, apiPost, getErrorMessage } from "@/lib/api";
 import { ApiResponse, SellerProfile } from "@/types";
 
@@ -22,6 +23,7 @@ const emptyForm = {
 
 export default function SellerApplyPage() {
   const { data: session, status } = useSession();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<SellerProfile | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -44,19 +46,22 @@ export default function SellerApplyPage() {
   }
 
   useEffect(() => {
-    if (status === "authenticated") load().catch((error) => alert(getErrorMessage(error))).finally(() => setLoading(false));
+    if (status === "authenticated") load().catch((error) => toast({ title: "Không tải được hồ sơ seller", description: getErrorMessage(error), variant: "error" })).finally(() => setLoading(false));
     if (status === "unauthenticated") setLoading(false);
   }, [status]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!session?.accessToken) return alert("Vui lòng đăng nhập để đăng ký seller");
+    if (!session?.accessToken) {
+      toast({ title: "Bạn cần đăng nhập", description: "Đăng nhập để gửi yêu cầu mở shop.", variant: "warning" });
+      return;
+    }
     try {
       const res = await apiPost<ApiResponse<SellerProfile>>("/seller/apply", form, session.accessToken);
       setProfile(res.data);
-      alert("Yêu cầu seller đã được gửi cho admin duyệt.");
+      toast({ title: "Đã gửi yêu cầu seller", description: "Admin sẽ xét duyệt hồ sơ shop.", variant: "success" });
     } catch (error) {
-      alert(getErrorMessage(error));
+      toast({ title: "Không thể gửi yêu cầu seller", description: getErrorMessage(error), variant: "error" });
     }
   }
 
