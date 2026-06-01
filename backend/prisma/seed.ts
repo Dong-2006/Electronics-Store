@@ -7,30 +7,7 @@ const prisma = new PrismaClient();
 const image = (text: string) =>
   `https://placehold.co/900x700/eff6ff/1d4ed8?text=${encodeURIComponent(text)}`;
 
-const localProductSlugs = new Set([
-  "iphone-15",
-  "samsung-galaxy-s24",
-  "macbook-air-m2",
-  "dell-xps-13",
-  "asus-rog-strix-g16",
-  "lenovo-thinkpad-x1-carbon",
-  "sony-wh-1000xm5",
-  "logitech-mx-master-3s",
-  "logitech-g-pro-keyboard",
-  "msi-monitor-27-inch",
-  "apple-airpods-pro-2",
-  "samsung-galaxy-tab-s9",
-  "techzone-gaming-mouse",
-  "techzone-27-inch-ips-monitor",
-  "techzone-usb-c-hub-pro",
-  "techzone-mechanical-keyboard",
-  "techzone-refurbished-laptop"
-]);
-
-const productImage = (name: string) => {
-  const slug = slugify(name);
-  return localProductSlugs.has(slug) ? `/images/products/${slug}.png` : image(name);
-};
+const productImage = (name: string) => `/images/products/${slugify(name)}.png`;
 
 const categories = [
   "Điện thoại",
@@ -72,21 +49,6 @@ const brands = [
   "Akko"
 ];
 
-<<<<<<< HEAD
-const products = [
-  ["iPhone 15", "Điện thoại", "Apple", 22990000, 21490000, 18, "A16 Bionic", "6GB", "128GB", "6.1 inch OLED", "iOS 17"],
-  ["Samsung Galaxy S24", "Điện thoại", "Samsung", 21990000, 19990000, 22, "Exynos 2400", "8GB", "256GB", "6.2 inch AMOLED", "Android 14"],
-  ["MacBook Air M2", "Laptop", "Apple", 27990000, 25990000, 12, "Apple M2", "8GB", "256GB", "13.6 inch Retina", "macOS"],
-  ["Dell XPS 13"0, "Laptop", "Dell", 32990000, 30990000, 8, "Intel Core i7", "16GB", "512GB", "13.4 inch FHD+", "Windows 11"],
-  ["Asus ROG Strix G16", "Laptop", "Asus", 39990000, 36990000, 10, "Intel Core i7", "16GB", "1TB", "16 inch 165Hz", "Windows 11"],
-  ["Lenovo ThinkPad X1 Carbon", "Laptop", "Lenovo", 38990000, 35990000, 9, "Intel Core i7", "16GB", "1TB", "14 inch 2.8K", "Windows 11 Pro"],
-  ["Sony WH-1000XM5", "Tai nghe", "Sony", 8490000, 7290000, 30, "Bluetooth 5.2", "ANC", "30 giờ", "Over-ear", "USB-C"],
-  ["Logitech MX Master 3S", "Chuột", "Logitech", 2490000, 2190000, 40, "Darkfield", "8000 DPI", "70 ngày", "Không dây", "USB-C"],
-  ["Logitech G Pro Keyboard", "Bàn phím", "Logitech", 3290000, 2890000, 35, "GX Blue", "TKL", "RGB", "USB-C", "Windows/macOS"],
-  ["MSI Monitor 27 inch", "Màn hình", "MSI", 6490000, 5990000, 16, "IPS", "27 inch", "2K", "170Hz", "HDMI/DP"],
-  ["Apple AirPods Pro 2", "Tai nghe", "Apple", 6490000, 5790000, 28, "H2", "ANC", "6 giờ", "In-ear", "MagSafe"],
-  ["Samsung Galaxy Tab S9", "Phụ kiện", "Samsung", 19990000, 18490000, 14, "Snapdragon 8 Gen 2", "8GB", "128GB", "11 inch AMOLED", "Android"]
-=======
 const sellerSeeds = [
   {
     key: "techzone",
@@ -169,7 +131,6 @@ const sellerSeeds = [
     description: "Laptop học tập, văn phòng, đồ họa và gaming.",
     address: "101 Thai Ha, Dong Da, Ha Noi"
   }
->>>>>>> 9ea2e21 (Update seed file)
 ] as const;
 
 type ProductSpec = { key: string; value: string };
@@ -597,3 +558,4 @@ main()
     await prisma.$disconnect();
     process.exit(1);
   });
+
