@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/common/Button";
 import { Card, CardContent, CardHeader } from "@/components/common/Card";
 import { FormField } from "@/components/common/FormField";
@@ -159,7 +160,7 @@ export function SellerProductForm({ product }: { product?: Product }) {
           <CardHeader title="Preview" description="Xem nhanh cách sản phẩm hiển thị." />
           <CardContent>
             <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-slate-100">
-              {form.image && <img src={form.image} alt={form.name || "Preview"} className="h-full w-full object-contain p-4" />}
+              {form.image && <Image src={form.image} alt={form.name || "Preview"} fill className="object-contain p-4" unoptimized />}
             </div>
             <p className="mt-4 text-sm font-bold uppercase tracking-wide text-slate-400">Sản phẩm shop</p>
             <h3 className="mt-1 line-clamp-2 text-lg font-black text-slate-950">{form.name || "Tên sản phẩm"}</h3>

@@ -88,10 +88,14 @@ export async function createOrder(userId: number, input: unknown) {
             price: Number(item.product.discountPrice || item.product.price)
           }
         });
-        await tx.product.update({
-          where: { id: item.productId },
+        const updateResult = await tx.product.updateMany({
+          where: { id: item.productId, stock: { gte: item.quantity } },
           data: { stock: { decrement: item.quantity }, sold: { increment: item.quantity } }
         });
+
+        if (updateResult.count === 0) {
+          throw new Error(`Sản phẩm ${item.product.name} không đủ tồn kho (có thể do người khác vừa mua)`);
+        }
       }
 
       if (draft.sellerId && draft.items[0]?.product.seller?.userId) {

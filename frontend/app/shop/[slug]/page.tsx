@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Loading } from "@/components/common/Loading";
 import { useToast } from "@/components/common/Toast";
 import { ProductGrid } from "@/components/product/ProductGrid";
@@ -31,10 +32,10 @@ export default function ShopPage() {
   return (
     <div>
       <section className="relative min-h-64 bg-slate-900">
-        {payload.shop.shopBanner && <img src={payload.shop.shopBanner} alt={payload.shop.shopName} className="absolute inset-0 h-full w-full object-cover opacity-60" />}
+        {payload.shop.shopBanner && <Image src={payload.shop.shopBanner} alt={payload.shop.shopName} fill className="object-cover opacity-60" unoptimized />}
         <div className="relative mx-auto flex max-w-7xl items-end gap-5 px-4 py-10 text-white">
-          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-md bg-white text-3xl font-black text-primary-700">
-            {payload.shop.shopLogo ? <img src={payload.shop.shopLogo} alt={payload.shop.shopName} className="h-full w-full object-cover" /> : payload.shop.shopName[0]}
+          <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-md bg-white text-3xl font-black text-primary-700">
+            {payload.shop.shopLogo ? <Image src={payload.shop.shopLogo} alt={payload.shop.shopName} fill className="object-cover" unoptimized /> : payload.shop.shopName[0]}
           </div>
           <div>
             <h1 className="text-3xl font-black">{payload.shop.shopName}</h1>
