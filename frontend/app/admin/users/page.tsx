@@ -48,9 +48,11 @@ export default function AdminUsersPage() {
             <td className="px-4 py-3">{user.role}</td>
             <td className="px-4 py-3">{user.isActive ? "Hoạt động" : "Đã khóa"}</td>
             <td className="space-x-2 px-4 py-3">
-              <Button variant="secondary" onClick={async () => { await apiPut(`/admin/users/${user.id}/status`, { isActive: !user.isActive }, session!.accessToken); toast({ title: "Đã cập nhật user", variant: "success" }); await load(); }}>
-                {user.isActive ? "Khóa" : "Mở"}
-              </Button>
+              {user.role !== "ADMIN" && (
+                <Button variant="secondary" onClick={async () => { await apiPut(`/admin/users/${user.id}/status`, { isActive: !user.isActive }, session!.accessToken); toast({ title: "Đã cập nhật user", variant: "success" }); await load(); }}>
+                  {user.isActive ? "Khóa" : "Mở"}
+                </Button>
+              )}
               {user.role !== "ADMIN" && <Button variant="danger" onClick={() => setDeleteId(user.id)}>Xóa</Button>}
             </td>
           </tr>

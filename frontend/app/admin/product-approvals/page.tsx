@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { DataTable } from "@/components/admin/DataTable";
+import { ProductDetailModal } from "@/components/admin/ProductDetailModal";
 import { TableToolbar } from "@/components/admin/TableToolbar";
 import { Button } from "@/components/common/Button";
 import { FormField } from "@/components/common/FormField";
@@ -27,6 +28,7 @@ export default function AdminProductApprovalsPage() {
   const [loading, setLoading] = useState(true);
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
 
   async function load() {
     if (!session?.accessToken) return;
@@ -87,7 +89,7 @@ export default function AdminProductApprovalsPage() {
       ) : (
         <DataTable headers={["Sản phẩm", "Seller", "Giá", "Trạng thái", "Thông tin", "Thao tác"]} empty={!products.length}>
           {products.map((product) => (
-            <tr key={product.id}>
+            <tr key={product.id} className="cursor-pointer hover:bg-slate-50" onClick={() => setViewingProduct(product)}>
               <td className="px-4 py-3">
                 <p className="font-semibold">{product.name}</p>
                 <p className="max-w-md text-xs text-slate-500">{product.description}</p>
@@ -99,7 +101,7 @@ export default function AdminProductApprovalsPage() {
                 {product.category?.name} / {product.brand?.name}
                 {product.rejectReason && <p className="mt-1 text-red-700">{product.rejectReason}</p>}
               </td>
-              <td className="px-4 py-3">
+              <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                 <div className="flex flex-wrap gap-2">
                   {product.approvalStatus !== "APPROVED" && <Button size="sm" onClick={() => approve(product.id)}>Duyệt</Button>}
                   {product.approvalStatus !== "REJECTED" && <Button size="sm" variant="danger" onClick={() => setRejectId(product.id)}>Từ chối</Button>}
@@ -121,6 +123,8 @@ export default function AdminProductApprovalsPage() {
           </div>
         </form>
       </Modal>
+
+      <ProductDetailModal product={viewingProduct} onClose={() => setViewingProduct(null)} />
     </>
   );
 }

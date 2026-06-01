@@ -26,7 +26,7 @@ const products = [
   ["iPhone 15", "Điện thoại", "Apple", 22990000, 21490000, 18, "A16 Bionic", "6GB", "128GB", "6.1 inch OLED", "iOS 17"],
   ["Samsung Galaxy S24", "Điện thoại", "Samsung", 21990000, 19990000, 22, "Exynos 2400", "8GB", "256GB", "6.2 inch AMOLED", "Android 14"],
   ["MacBook Air M2", "Laptop", "Apple", 27990000, 25990000, 12, "Apple M2", "8GB", "256GB", "13.6 inch Retina", "macOS"],
-  ["Dell XPS 13", "Laptop", "Dell", 32990000, 30990000, 8, "Intel Core i7", "16GB", "512GB", "13.4 inch FHD+", "Windows 11"],
+  ["Dell XPS 13"0, "Laptop", "Dell", 32990000, 30990000, 8, "Intel Core i7", "16GB", "512GB", "13.4 inch FHD+", "Windows 11"],
   ["Asus ROG Strix G16", "Laptop", "Asus", 39990000, 36990000, 10, "Intel Core i7", "16GB", "1TB", "16 inch 165Hz", "Windows 11"],
   ["Lenovo ThinkPad X1 Carbon", "Laptop", "Lenovo", 38990000, 35990000, 9, "Intel Core i7", "16GB", "1TB", "14 inch 2.8K", "Windows 11 Pro"],
   ["Sony WH-1000XM5", "Tai nghe", "Sony", 8490000, 7290000, 30, "Bluetooth 5.2", "ANC", "30 giờ", "Over-ear", "USB-C"],
