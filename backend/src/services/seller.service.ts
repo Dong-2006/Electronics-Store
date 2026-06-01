@@ -283,7 +283,11 @@ export async function updateSellerSubOrderStatus(sellerId: number, subOrderId: n
     title: "Cập nhật đơn hàng",
     message: `Đơn hàng #${updated.orderId} tai ${updated.seller?.shopName || "shop"} đã chuyen sang ${updated.status}`,
     type: "ORDER_UPDATE",
-    metadata: { orderId: updated.orderId, subOrderId: updated.id }
+    metadata: {
+      orderId: updated.orderId,
+      subOrderId: updated.id,
+      url: `/orders/${updated.orderId}`
+    }
   });
 
   return updated;

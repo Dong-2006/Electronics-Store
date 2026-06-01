@@ -77,7 +77,20 @@ export function NotificationDrawer() {
         setUnreadCount((count) => Math.max(count - 1, 0));
       }
 
-      const url = notification.metadata?.url || (notification.metadata?.orderId ? `/orders/${notification.metadata.orderId}` : "");
+      // Ưu tiên url có sẵn trong metadata
+      let url = notification.metadata?.url as string | undefined;
+
+      // Fallback thông minh theo loại thông báo nếu không có url
+      if (!url) {
+        if (notification.type === "NEW_ORDER") {
+          // Thông báo đơn hàng mới cho seller
+          url = "/seller/orders";
+        } else if (notification.type === "ORDER_UPDATE" && notification.metadata?.orderId) {
+          // Thông báo cập nhật đơn hàng cho customer
+          url = `/orders/${notification.metadata.orderId}`;
+        }
+      }
+
       if (url) {
         setOpen(false);
         router.push(url);

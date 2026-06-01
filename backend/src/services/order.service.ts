@@ -129,7 +129,11 @@ export async function createOrder(userId: number, input: unknown) {
         title: notification.title,
         message: notification.message,
         type: "NEW_ORDER",
-        metadata: { orderId: notification.orderId, subOrderId: notification.subOrderId }
+        metadata: {
+          orderId: notification.orderId,
+          subOrderId: notification.subOrderId,
+          url: `/seller/orders`
+        }
       })
     )
   );
