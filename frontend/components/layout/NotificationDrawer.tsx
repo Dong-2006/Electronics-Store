@@ -1,11 +1,11 @@
 "use client";
 
-import { AlertCircle, Bell, CheckCheck, Megaphone, PackageCheck, RefreshCw, ShoppingBag, X } from "lucide-react";
+import { AlertCircle, Bell, CheckCheck, Inbox, Megaphone, PackageCheck, RefreshCw, ShoppingBag, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { Button } from "@/components/common/Button";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { API_URL, apiGet, apiPut } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { ApiResponse, Notification, NotificationType } from "@/types";
 
 type Payload = {
@@ -13,7 +13,15 @@ type Payload = {
   unreadCount: number;
 };
 
-export function NotificationDrawer() {
+type Props = {
+  light?: boolean;
+};
+
+function formatUnreadCount(count: number) {
+  return count > 99 ? "99+" : String(count);
+}
+
+export function NotificationDrawer({ light = false }: Props) {
   const { data: session } = useSession();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -21,6 +29,8 @@ export function NotificationDrawer() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasFreshNotification, setHasFreshNotification] = useState(false);
+  const freshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async () => {
     if (!session?.accessToken) return;
@@ -56,6 +66,9 @@ export function NotificationDrawer() {
         setItems((current) => [notification, ...current.filter((item) => item.id !== notification.id)].slice(0, 20));
         setUnreadCount((count) => count + (notification.isRead ? 0 : 1));
         setError("");
+        setHasFreshNotification(true);
+        if (freshTimer.current) clearTimeout(freshTimer.current);
+        freshTimer.current = setTimeout(() => setHasFreshNotification(false), 900);
       } catch {
         setError("Thông báo mới không đúng định dạng.");
       }
@@ -68,6 +81,23 @@ export function NotificationDrawer() {
     return () => source.close();
   }, [session?.accessToken, open]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    return () => {
+      if (freshTimer.current) clearTimeout(freshTimer.current);
+    };
+  }, []);
+
   async function openNotification(notification: Notification) {
     if (!session?.accessToken) return;
     try {
@@ -77,16 +107,12 @@ export function NotificationDrawer() {
         setUnreadCount((count) => Math.max(count - 1, 0));
       }
 
-      // Ưu tiên url có sẵn trong metadata
       let url = notification.metadata?.url as string | undefined;
 
-      // Fallback thông minh theo loại thông báo nếu không có url
       if (!url) {
         if (notification.type === "NEW_ORDER") {
-          // Thông báo đơn hàng mới cho seller
           url = "/seller/orders";
         } else if (notification.type === "ORDER_UPDATE" && notification.metadata?.orderId) {
-          // Thông báo cập nhật đơn hàng cho customer
           url = `/orders/${notification.metadata.orderId}`;
         }
       }
@@ -115,60 +141,133 @@ export function NotificationDrawer() {
 
   return (
     <>
-      <button className="relative rounded-md p-2 hover:bg-slate-100" onClick={openDrawer} title="Thông báo">
-        <Bell className="h-5 w-5" />
+      <button
+        className={cn(
+          "group relative flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-sky-400/50 focus:ring-offset-2",
+          light
+            ? "border-white/10 bg-white/10 text-slate-100 backdrop-blur-md hover:bg-white/20 hover:text-white focus:ring-offset-slate-950"
+            : "border-slate-200 bg-slate-50 text-slate-700 shadow-sm hover:border-sky-100 hover:bg-sky-100 hover:text-blue-600 focus:ring-offset-white",
+          open && (light ? "bg-white/20 text-white" : "border-sky-200 bg-sky-100 text-blue-700"),
+          hasFreshNotification && "scale-105"
+        )}
+        onClick={openDrawer}
+        title="Notifications"
+        aria-label="Notifications"
+        aria-expanded={open}
+      >
+        <Bell className={cn("h-5 w-5 transition-transform duration-300 group-hover:scale-110", hasFreshNotification && "animate-pulse")} />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-red-500 px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-white">
-            {unreadCount > 9 ? "9+" : unreadCount}
+          <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white animate-pulse">
+            {formatUnreadCount(unreadCount)}
           </span>
         )}
       </button>
+
       {open && (
         <div className="fixed inset-0 z-50">
-          <button className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" onClick={() => setOpen(false)} aria-label="Đóng thông báo" />
-          <aside className="fixed inset-y-0 right-0 flex h-dvh w-full max-w-xl flex-col border-l border-slate-200 bg-white shadow-lift sm:w-[520px]">
-            <div className="flex min-h-20 shrink-0 items-center justify-between gap-3 border-b border-slate-200 px-5">
-              <div>
-                <h2 className="text-lg font-black text-slate-950">Thông báo</h2>
-                <p className="text-xs font-semibold text-slate-500">{unreadCount} chưa đọc</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" className="h-10 w-10 px-0" onClick={load} disabled={loading} title="Tải lại">
-                  <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-                </Button>
-                <Button variant="ghost" className="h-10 w-10 px-0" onClick={markAll} title="Đánh dấu tất cả đã đọc">
-                  <CheckCheck className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" className="h-10 w-10 px-0" onClick={() => setOpen(false)} title="Đóng">
+          <button className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]" onClick={() => setOpen(false)} aria-label="Đóng thông báo" />
+          <aside className="fixed inset-y-3 right-3 flex h-[calc(100dvh-1.5rem)] w-[calc(100vw-1.5rem)] max-w-[420px] animate-slide-up flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 sm:inset-y-4 sm:right-4 sm:h-[calc(100dvh-2rem)]">
+            <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-4 sm:px-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                    <Bell className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <h2 className="text-base font-black text-slate-950">Notifications</h2>
+                    <p className="text-xs font-semibold text-slate-500">{unreadCount} chưa đọc</p>
+                  </div>
+                </div>
+                <button
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-400/50"
+                  onClick={() => setOpen(false)}
+                  title="Đóng"
+                  aria-label="Đóng thông báo"
+                >
                   <X className="h-4 w-4" />
-                </Button>
+                </button>
+              </div>
+
+              <div className="mt-4 flex items-center gap-2">
+                <button
+                  className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 transition hover:border-sky-100 hover:bg-sky-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-sky-400/50 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={load}
+                  disabled={loading}
+                  title="Tải lại"
+                >
+                  <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+                  Refresh
+                </button>
+                <button
+                  className="inline-flex h-9 flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 text-xs font-bold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-sky-400/50 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={markAll}
+                  disabled={unreadCount === 0}
+                  title="Đánh dấu tất cả đã đọc"
+                >
+                  <CheckCheck className="h-4 w-4" />
+                  Mark all
+                </button>
               </div>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/60">
+
+            <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/80 p-3">
               {error && (
-                <div className="m-4 flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                <div className="mb-3 flex gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-800">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
-              {loading && <p className="p-6 text-sm text-slate-500">Đang tải thông báo...</p>}
+
+              {loading && (
+                <div className="space-y-2">
+                  {[0, 1, 2].map((item) => (
+                    <div key={item} className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm">
+                      <div className="skeleton-shimmer h-3 w-2/3 rounded-full" />
+                      <div className="skeleton-shimmer mt-3 h-3 w-full rounded-full" />
+                      <div className="skeleton-shimmer mt-2 h-3 w-1/3 rounded-full" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {!loading && items.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => openNotification(item)}
-                  className="flex w-full gap-3 border-b border-slate-100 bg-white px-5 py-4 text-left transition hover:bg-primary-50/50"
+                  className={cn(
+                    "group mb-2 flex w-full gap-3 rounded-xl border p-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft focus:outline-none focus:ring-2 focus:ring-sky-400/50",
+                    item.isRead
+                      ? "border-slate-100 bg-white hover:bg-slate-50"
+                      : "border-blue-100 bg-blue-50 hover:border-blue-200 hover:bg-blue-50/80"
+                  )}
                 >
                   <NotificationIcon type={item.type} isRead={item.isRead} />
                   <span className="min-w-0 flex-1">
-                    <span className={item.isRead ? "block font-semibold text-slate-700" : "block font-semibold text-slate-950"}>
-                      {item.title}
+                    <span className="flex items-start justify-between gap-3">
+                      <span className={cn("block text-sm font-black", item.isRead ? "text-slate-700" : "text-slate-950")}>
+                        {item.title}
+                      </span>
+                      {!item.isRead && (
+                        <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-500 ring-2 ring-white" aria-label="Chưa đọc" />
+                      )}
                     </span>
                     <span className="mt-1 block whitespace-normal break-words text-sm leading-6 text-slate-600">{item.message}</span>
-                    <span className="mt-1 block text-xs text-slate-400">{new Date(item.createdAt).toLocaleString("vi-VN")}</span>
+                    <span className="mt-2 block text-xs font-semibold text-slate-400">{new Date(item.createdAt).toLocaleString("vi-VN")}</span>
                   </span>
                 </button>
               ))}
-              {!loading && !items.length && <p className="p-6 text-sm text-slate-500">Chưa có thông báo.</p>}
+
+              {!loading && !items.length && (
+                <div className="grid min-h-[360px] place-items-center rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center shadow-sm">
+                  <div>
+                    <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                      <Inbox className="h-7 w-7" />
+                    </span>
+                    <h3 className="mt-4 text-base font-black text-slate-950">No notifications yet</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-500">You&apos;re all caught up.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </aside>
         </div>
@@ -178,8 +277,8 @@ export function NotificationDrawer() {
 }
 
 function NotificationIcon({ type, isRead }: { type: NotificationType; isRead: boolean }) {
-  const className = isRead ? "h-4 w-4 text-slate-400" : "h-4 w-4 text-primary-700";
-  const wrapper = isRead ? "bg-slate-100" : "bg-primary-50";
+  const className = isRead ? "h-4 w-4 text-slate-400" : "h-4 w-4 text-blue-700";
+  const wrapper = isRead ? "bg-slate-100" : "bg-white text-blue-700 ring-1 ring-blue-100";
 
   const Icon = {
     NEW_ORDER: ShoppingBag,
@@ -190,7 +289,7 @@ function NotificationIcon({ type, isRead }: { type: NotificationType; isRead: bo
   }[type];
 
   return (
-    <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${wrapper}`}>
+    <span className={cn("mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition group-hover:scale-105", wrapper)}>
       <Icon className={className} />
     </span>
   );

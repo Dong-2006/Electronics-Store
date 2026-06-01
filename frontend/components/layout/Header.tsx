@@ -132,7 +132,7 @@ export function Header() {
               </Link>
             ))}
 
-            <NotificationDrawer />
+            <NotificationDrawer light={isHero && !scrolled} />
 
             {session?.user.role === "ADMIN" && (
               <Link
