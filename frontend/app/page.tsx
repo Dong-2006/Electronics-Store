@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/common/Button";
@@ -51,6 +52,7 @@ const benefits = [
 
 export default function HomePage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const { toast } = useToast();
   const [featured, setFeatured] = useState<Product[]>([]);
   const [latest, setLatest] = useState<Product[]>([]);
@@ -462,12 +464,14 @@ export default function HomePage() {
               Đăng ký seller, đăng sản phẩm sau khi được duyệt và tiếp cận hàng nghìn khách hàng tiềm năng ngay hôm nay.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
-              <Link href="/seller/apply">
-                <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-orange-600/30 transition-all duration-200 hover:-translate-y-0.5 hover:from-orange-400 hover:to-amber-400">
-                  Đăng ký bán hàng
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </Link>
+              {session?.user?.role !== "ADMIN" && (
+                <Link href="/seller/apply">
+                  <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-orange-600/30 transition-all duration-200 hover:-translate-y-0.5 hover:from-orange-400 hover:to-amber-400">
+                    Đăng ký bán hàng
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </Link>
+              )}
               <Link href="/products">
                 <button className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/8 px-8 py-4 text-sm font-semibold text-white backdrop-blur transition-all duration-200 hover:bg-white/15 hover:-translate-y-0.5">
                   Khám phá sản phẩm

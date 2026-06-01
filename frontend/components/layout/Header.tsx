@@ -98,18 +98,20 @@ export function Header() {
             </Link>
           ))}
 
-          <Link
-            href={sellerHref}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-200",
-              isHero && !scrolled
-                ? "text-slate-300 hover:bg-white/10 hover:text-white"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-            )}
-          >
-            <Store className="h-4 w-4" />
-            Bán hàng
-          </Link>
+          {session?.user?.role !== "ADMIN" && (
+            <Link
+              href={sellerHref}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-200",
+                isHero && !scrolled
+                  ? "text-slate-300 hover:bg-white/10 hover:text-white"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              )}
+            >
+              <Store className="h-4 w-4" />
+              Bán hàng
+            </Link>
+          )}
 
           {/* Icon buttons */}
           <div className="ml-1 flex items-center gap-0.5">
