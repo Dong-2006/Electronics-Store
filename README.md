@@ -113,12 +113,18 @@ http://localhost:3000
 
 Sau khi seed:
 
-- Admin: `admin@gmail.com` / `123456`
-- User: `user1@gmail.com` / `123456`
-- User: `user2@gmail.com` / `123456`
-- Seller: `seller1@gmail.com` / `123456`
-
-Seller mau co shop `TechZone Store`, slug `techzone-store`, status `APPROVED`.
+- **Admin**: `admin@gmail.com` / `123456`
+- **Users**: `user1@gmail.com`, `user2@gmail.com`, `user3@gmail.com`, `user4@gmail.com` (Mật khẩu: `123456`)
+- **Sellers** (Tất cả mật khẩu là `123456`, trạng thái `APPROVED`):
+  - `seller1@gmail.com` (TechZone Store)
+  - `applehub@gmail.com` (AppleHub Vietnam)
+  - `samsungworld@gmail.com` (SamsungWorld)
+  - `gaminggear@gmail.com` (Gaming Gear Pro)
+  - `pcmaster@gmail.com` (PC Master)
+  - `soundwave@gmail.com` (SoundWave Audio)
+  - `displaypro@gmail.com` (Display Pro)
+  - `accessoryhub@gmail.com` (Accessory Hub)
+  - `laptopcenter@gmail.com` (Laptop Center)
 
 ## Route test nhanh
 
