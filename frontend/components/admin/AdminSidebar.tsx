@@ -13,7 +13,7 @@ const links = [
   { href: "/admin/orders", label: "Đơn hàng", icon: ShoppingBag },
   { href: "/admin/sellers", label: "Duyệt seller", icon: Store },
   { href: "/admin/product-approvals", label: "Duyệt sản phẩm", icon: CheckSquare },
-  { href: "/admin/bulk-upload", label: "Nhập hàng loạt", icon: CloudUpload },
+
   { href: "/admin/notifications", label: "Thông báo", icon: BellRing },
   { href: "/admin/users", label: "Người dùng", icon: Users }
 ];
